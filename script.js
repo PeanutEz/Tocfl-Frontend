@@ -1686,3 +1686,31 @@ function changeExam(examId) {
 window.onload = function() {
     changeExam("A_1");
 };
+// ==========================================
+// TRACKING: TẮT WEB & TREO MÁY (TIMEOUT)
+// ==========================================
+
+// 1. Ghi nhận khi học sinh tắt tab/trình duyệt
+window.addEventListener('beforeunload', function() {
+    trackUserAction("Logout", "Học sinh đóng tab hoặc tắt trình duyệt");
+});
+
+// 2. Ghi nhận khi học sinh treo máy 30 phút
+let inactivityTimer;
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        trackUserAction("SessionTimeout", "Hệ thống tự động đăng xuất sau 30 phút không thao tác");
+        
+        // (Tùy chọn) Thêm lệnh đăng xuất hoặc tải lại trang ở đây nếu muốn:
+        // location.reload(); 
+    }, 30 * 60 * 1000); // 30 phút
+}
+
+// Bắt các thao tác chuột/phím để đếm lại 30 phút từ đầu
+['click', 'mousemove', 'keydown', 'scroll'].forEach(evt => {
+    document.addEventListener(evt, resetInactivityTimer);
+});
+
+// Kích hoạt đồng hồ ngay khi vào web
+resetInactivityTimer();
