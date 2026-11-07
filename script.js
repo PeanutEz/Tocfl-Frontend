@@ -1423,6 +1423,7 @@ function submitTocflTest() {
 
     // Hiện thông báo tổng điểm
     alert(`Hoàn thành! Bạn đã làm đúng ${correctCount} / ${allCards.length} câu. Kéo xuống để xem chi tiết giải thích nhé!`);
+  trackUserAction("SubmitTest", "Nộp phần thi Đọc, Điểm: " + correctCount + "/" + allCards.length);
   // --- HIỂN THỊ BẢNG ĐIỂM TRÊN CÙNG (DÀNH CHO BÀI ĐỌC) ---
     let resultBoard = document.getElementById('reading-result-board');
     if (!resultBoard) {
@@ -1605,6 +1606,7 @@ function submitListeningExam() {
 
     // 1. HIỂN THỊ POP-UP THÔNG BÁO ALERT (GIỐNG BÀI ĐỌC)
     alert(`Hoàn thành! Bạn đã làm đúng ${correctCount} / ${totalQuestions} câu. Kéo xuống để xem chi tiết giải thích nhé!`);
+  trackUserAction("SubmitTest", "Nộp phần thi Nghe, Điểm: " + correctCount + "/" + totalQuestions);
 
     // 2. HIỂN THỊ BẢNG ĐIỂM TRÊN CÙNG
     let resultBoard = document.getElementById('listening-result-board');
