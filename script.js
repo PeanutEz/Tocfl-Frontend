@@ -518,6 +518,7 @@ if (searchInput) {
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
+          trackUserAction("SearchWord", "Tra từ khóa: " + this.value.trim());
             dictSuggest.style.display = 'none';
             const rawInput = this.value.trim().toLowerCase();
             const allData = getAllDictData();
