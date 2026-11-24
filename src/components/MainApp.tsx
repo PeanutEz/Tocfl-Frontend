@@ -1,0 +1,372 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { signOut, type User } from "firebase/auth";
+import { ArrowUp, BookOpen, ClipboardCheck, LogOut, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
+import { toast } from "sonner";
+import { firebaseAuth } from "@/lib/firebase";
+import { trackUserAction } from "@/lib/tracking";
+import { loadDialogues, loadDictionary, useAsync } from "@/lib/data";
+import { glossesOf, searchWords, suggestWords } from "@/lib/text";
+import { levelOf, searchDialogues } from "@/lib/dialogues";
+import { pauseAllAudio, stopSpeaking } from "@/lib/speech";
+import type { Word } from "@/lib/types";
+import SearchBox, { type Suggestion } from "./SearchBox";
+import MobileMenu from "./MobileMenu";
+import DictionaryTab from "./dictionary/DictionaryTab";
+import DialogueTab, { type DialogueFocus } from "./dialogue/DialogueTab";
+import ExamTab from "./exam/ExamTab";
+
+type TabId = "dict" | "speak" | "exam";
+
+const TABS: { id: TabId; label: string; icon: LucideIcon; trackDetail: string }[] = [
+  { id: "dict", label: "Từ điển", icon: BookOpen, trackDetail: "Chuyển sang tab Từ Điển" },
+  { id: "speak", label: "Hội thoại & đoạn văn", icon: MessagesSquare, trackDetail: "Chuyển sang tab Hội Thoại" },
+  { id: "exam", label: "Luyện thi TOCFL", icon: ClipboardCheck, trackDetail: "Chuyển sang tab Luyện Thi TOCFL" },
+];
+
+const INACTIVITY_MS = 30 * 60 * 1000;
+
+/** Ghi nhận đóng tab và treo máy 30 phút (giữ nguyên cách ghi của bản cũ). */
+function useSessionTracking() {
+  useEffect(() => {
+    const onUnload = () => {
+      trackUserAction("CloseTab", "Học sinh tắt tab hoặc đóng trình duyệt");
+      trackUserAction("Logout", "Học sinh đóng tab hoặc tắt trình duyệt");
+    };
+    window.addEventListener("beforeunload", onUnload);
+
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(
+        () => trackUserAction("SessionTimeout", "Hệ thống tự động đăng xuất sau 30 phút không thao tác"),
+        INACTIVITY_MS,
+      );
+    };
+    const events = ["click", "mousemove", "keydown", "scroll"] as const;
+    events.forEach((evt) => document.addEventListener(evt, reset, { passive: true }));
+    reset();
+
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      events.forEach((evt) => document.removeEventListener(evt, reset));
+      clearTimeout(timer);
+    };
+  }, []);
+}
+
+function useScrollY() {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setY(window.scrollY));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+  return y;
+}
+
+export default function MainApp({ user }: { user: User }) {
+  const [tab, setTab] = useState<TabId>("dict");
+  const [signingOut, setSigningOut] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const scrollY = useScrollY();
+  const scrolled = scrollY > 120; // phần tiêu đề đã cuộn khuất, thanh tìm kiếm đang dính
+  const showToTop = scrollY > 500;
+  useSessionTracking();
+
+  // --- Từ điển ---
+  const words = useAsync(loadDictionary, []);
+  const [dictQuery, setDictQuery] = useState("");
+  const [dictResults, setDictResults] = useState<Word[] | null>(null);
+  const [dictPage, setDictPage] = useState(1);
+  // Lượt tìm đang áp dụng: "q" = tìm theo từ khoá, "w" = chọn đúng một từ từ gợi ý
+  const [dictFilter, setDictFilter] = useState<{ kind: "q" | "w"; value: string } | null>(null);
+  const [urlRestored, setUrlRestored] = useState(false);
+
+  // Khôi phục tab / từ khoá / trang từ URL khi tải lại trang (vd: ?q=ban&page=3)
+  useEffect(() => {
+    const tabParam = new URLSearchParams(window.location.search).get("tab");
+    if (tabParam === "speak" || tabParam === "exam") setTab(tabParam);
+  }, []);
+
+  useEffect(() => {
+    if (!words.data || urlRestored) return;
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q")?.trim();
+    const w = params.get("w")?.trim();
+    let results: Word[] | null = null;
+
+    if (w) {
+      results = words.data.filter((item) => item.word === w);
+      setDictQuery(w);
+      setDictFilter({ kind: "w", value: w });
+    } else if (q) {
+      results = searchWords(words.data, q);
+      setDictQuery(q);
+      setDictFilter({ kind: "q", value: q });
+    }
+    if (results) setDictResults(results);
+
+    const total = Math.max(1, Math.ceil((results ?? words.data).length / 10));
+    const page = parseInt(params.get("page") ?? "1", 10);
+    setDictPage(Number.isFinite(page) ? Math.min(Math.max(page, 1), total) : 1);
+    setUrlRestored(true);
+  }, [words.data, urlRestored]);
+
+  // Ghi trạng thái hiện tại lên URL (thay thế, không thêm lịch sử)
+  useEffect(() => {
+    if (!urlRestored) return;
+    const params = new URLSearchParams();
+    if (tab !== "dict") params.set("tab", tab);
+    if (dictFilter) params.set(dictFilter.kind, dictFilter.value);
+    if (dictPage > 1) params.set("page", String(dictPage));
+    const qs = params.toString();
+    const url = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
+    if (url !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      window.history.replaceState(window.history.state, "", url);
+    }
+  }, [urlRestored, tab, dictFilter, dictPage]);
+
+  // --- Hội thoại ---
+  const dialogues = useAsync(loadDialogues, []);
+  const [diagQuery, setDiagQuery] = useState("");
+  const [focus, setFocus] = useState<DialogueFocus | null>(null);
+
+  function switchTab(next: TabId) {
+    // Bản gốc ghi nhận mọi lần bấm tab, kể cả bấm lại tab đang mở: giữ nguyên để số liệu luận văn nhất quán
+    trackUserAction("SwitchTab", TABS.find((t) => t.id === next)!.trackDetail);
+    if (next === tab) return;
+    stopSpeaking();
+    pauseAllAudio();
+    if (next === "speak") {
+      // Vào lại tab hội thoại thì bắt đầu từ bài đầu tiên, xoá kết quả tìm cũ
+      setDiagQuery("");
+      setFocus(null);
+    }
+    setTab(next);
+  }
+
+  function handleLogout() {
+    setSigningOut(true);
+    trackUserAction("Logout", "Học sinh chủ động bấm nút đăng xuất");
+    // Chờ một chút để Firestore kịp ghi trước khi thoát phiên
+    setTimeout(() => {
+      signOut(firebaseAuth())
+        .then(() => toast("Bạn đã đăng xuất", { description: "Hẹn gặp lại ở buổi ôn tập tới!" }))
+        .catch(() => {
+          setSigningOut(false);
+          toast.error("Chưa đăng xuất được, vui lòng thử lại.");
+        });
+    }, 500);
+  }
+
+  // Từ điển: gợi ý & tìm kiếm
+  const dictSuggestions: Suggestion[] = useMemo(() => {
+    if (!words.data) return [];
+    return suggestWords(words.data, dictQuery).map(({ item, via }, i) => ({
+      key: `${item.word}-${i}`,
+      primary: (
+        <>
+          <strong>{item.word}</strong> <span className="text-[#666]">({item.pinyin})</span>
+        </>
+      ),
+      // Tìm bằng tiếng Việt thì hiện nghĩa để người dùng thấy vì sao từ này khớp
+      secondary: via === "vi" ? glossesOf(item.explanation).slice(0, 2).join(", ") || item.hanViet : item.hanViet,
+      onSelect: () => {
+        setDictQuery(item.word);
+        setDictResults([item]);
+        setDictFilter({ kind: "w", value: item.word });
+        setDictPage(1);
+      },
+    }));
+  }, [words.data, dictQuery]);
+
+  function submitDictSearch(raw: string) {
+    trackUserAction("SearchWord", "Tra từ khóa: " + raw.trim());
+    if (!words.data) return;
+    const results = raw.trim() ? searchWords(words.data, raw) : null;
+    setDictResults(results);
+    setDictFilter(raw.trim() ? { kind: "q", value: raw.trim() } : null);
+    setDictPage(1);
+    if (results && results.length === 0) toast.info(`Không tìm thấy từ nào khớp với “${raw.trim()}”.`);
+  }
+
+  // Hội thoại: gợi ý & nhảy tới bài
+  function jumpToDialogue(idx: number) {
+    const d = dialogues.data?.[idx];
+    if (!d) return;
+    setFocus({ level: levelOf(d), lesson: d.lesson, index: idx, nonce: Date.now() });
+  }
+
+  const diagSuggestions: Suggestion[] = useMemo(() => {
+    if (!dialogues.data) return [];
+    return searchDialogues(dialogues.data, diagQuery).map((idx) => {
+      const d = dialogues.data![idx];
+      return {
+        key: String(idx),
+        primary: d.title,
+        secondary: `${levelOf(d)} · ${d.lesson}`,
+        onSelect: () => jumpToDialogue(idx),
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dialogues.data, diagQuery]);
+
+  function submitDiagSearch(raw: string) {
+    if (!raw.trim() || !dialogues.data) return;
+    trackUserAction("Search", "Tra hội thoại: " + raw);
+    const [first] = searchDialogues(dialogues.data, raw, 1);
+    if (first === undefined) toast.info(`Chưa có hội thoại nào chứa “${raw.trim()}”.`);
+    else jumpToDialogue(first);
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-[1200px] rounded-lg bg-white p-2 shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:w-[95%] sm:p-5">
+      <header className="rounded-t-lg bg-brand px-4 pt-3 text-center text-white sm:px-5 sm:pt-4">
+        <div className="mb-1 flex items-center justify-center gap-3 sm:justify-between">
+          <span className="rounded bg-white/15 px-2.5 py-1 text-xs font-semibold tracking-wide sm:text-sm">國立臺南大學 NUTN</span>
+          <div className="hidden items-center gap-3 sm:flex">
+            <span className="hidden max-w-[240px] truncate text-sm text-white/80 sm:inline" title={user.email ?? ""}>
+              {user.email}
+            </span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={signingOut}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-[#666] px-3.5 py-1.5 text-sm font-medium text-white transition hover:bg-[#555] disabled:opacity-60"
+            >
+              <LogOut size={16} />
+              {signingOut ? "Đang đăng xuất…" : "Đăng xuất"}
+            </button>
+          </div>
+        </div>
+
+        <h1 className="text-[22px] font-bold leading-tight sm:text-[28px]">Maomi Chinese Dictionary</h1>
+      </header>
+
+      {/* Thanh tìm kiếm + tab: dính lên đầu màn hình khi cuộn xuống.
+          Màn hình nhỏ: một hàng gồm nút menu + ô tìm kiếm, các tab nằm trong menu trượt. */}
+      <div
+        className={`sticky top-0 z-40 rounded-b-lg bg-brand px-2.5 pb-2.5 pt-2.5 text-center text-white transition-shadow sm:px-4 sm:py-2.5 ${
+          scrolled ? "shadow-[0_8px_24px_rgba(0,0,0,0.25)]" : ""
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Mở menu"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/15 transition hover:bg-white/25 active:scale-95 sm:hidden"
+          >
+            <Menu size={22} />
+          </button>
+          <div className="min-w-0 flex-1">
+            {tab === "dict" && (
+              <SearchBox
+                value={dictQuery}
+                onChange={setDictQuery}
+                onSubmit={submitDictSearch}
+                onClear={() => {
+                  setDictResults(null);
+                  setDictFilter(null);
+                  setDictPage(1);
+                }}
+                suggestions={dictSuggestions}
+                placeholder="Tra từ: 你好, nihao, xin chào, bạn bè…"
+              />
+            )}
+            {tab === "speak" && (
+              <SearchBox
+                value={diagQuery}
+                onChange={setDiagQuery}
+                onSubmit={submitDiagSearch}
+                suggestions={diagSuggestions}
+                placeholder="Tìm hội thoại: chữ Hán, pinyin, nghĩa…"
+              />
+            )}
+            {tab === "exam" && (
+              <p className="flex items-center gap-2 text-left text-lg font-bold sm:hidden">
+                <ClipboardCheck size={20} /> Luyện thi TOCFL
+              </p>
+            )}
+          </div>
+        </div>
+
+        <nav
+          className={`hidden flex-wrap items-center justify-center gap-2 sm:flex ${tab === "exam" ? "" : "mt-2"}`}
+          aria-label="Chức năng"
+        >
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => switchTab(id)}
+              aria-current={tab === id ? "page" : undefined}
+              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-3.5 py-1.5 text-[15px] font-bold transition ${
+                tab === id ? "bg-white text-brand" : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+            >
+              <Icon size={17} />
+              {label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        tabs={TABS}
+        current={tab}
+        onSelect={(id) => {
+          setMenuOpen(false);
+          switchTab(id as TabId);
+          window.scrollTo({ top: 0 });
+        }}
+        email={user.email ?? ""}
+        signingOut={signingOut}
+        onLogout={handleLogout}
+      />
+
+      <main className="mt-4 sm:mt-5">
+        <div hidden={tab !== "dict"}>
+          <DictionaryTab
+            state={words}
+            items={dictResults ?? words.data ?? []}
+            page={dictPage}
+            onPageChange={setDictPage}
+          />
+        </div>
+        <div hidden={tab !== "speak"}>
+          {tab === "speak" && <DialogueTab state={dialogues} focus={focus} />}
+        </div>
+        <div hidden={tab !== "exam"}>
+          <ExamTab />
+        </div>
+      </main>
+
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="Lên đầu trang"
+        title="Lên đầu trang"
+        className={`fixed bottom-4 right-4 z-30 flex h-11 w-11 cursor-pointer sm:bottom-6 sm:right-6 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-brand text-white shadow-[0_6px_16px_rgba(178,34,34,0.4)] transition-all duration-300 hover:bg-brand-dark active:scale-95 ${
+          showToTop ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
+        }`}
+      >
+        <ArrowUp size={22} strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+}

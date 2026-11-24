@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* Bảng màu giữ đúng như bản HTML gốc */
+@theme {
+  --font-sans: "Segoe UI", system-ui, -apple-system, "Microsoft JhengHei", "PingFang TC", Arial, sans-serif;
+  --font-serif-tc: "Noto Serif TC", "PMingLiU", "Songti TC", serif;
+  --font-kai: "Kaiti TC", "STKaiti", "KaiTi", serif;
+
+  --color-page: #f0f2f5;
+  --color-brand: #b22222; /* header đỏ */
+  --color-brand-dark: #8f1b1b;
+  --color-accent: #d84b6b; /* hồng đậm: đăng nhập, phân trang, cấp độ */
+  --color-ink: #2c3e50;
+  --color-link: #2980b9; /* pinyin */
+  --color-muted: #7f8c8d;
+  --color-gold: #f39c12;
+  --color-success: #27ae60;
+  --color-danger: #e74c3c;
+
+  /* Khu luyện thi */
+  --color-exam: #a8342f;
+  --color-paper: #f8f1de;
+  --color-cream: #fdfaf1;
+  --color-sand: #c8b997;
+  --color-sand-light: #e6dfcc;
+  --color-slate-exam: #3b4d61;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+/* Màn hình từ tablet trở lên giữ cỡ chữ lớn như bản gốc */
+@media (min-width: 640px) {
+  body {
+    font-size: 20px;
+    line-height: 1.7;
+  }
+}
+
+/* Nội dung HTML đến từ dữ liệu bài học (có <br>, <b>, <strong>, <i>) */
+.rich b,
+.rich strong {
+  font-weight: 700;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+@keyframes flash-ring {
+  0%,
+  100% {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
+  30% {
+    box-shadow: 0 0 0 3px #2ecc71, 0 0 25px #2ecc71;
+  }
+}
+.flash {
+  animation: flash-ring 1.6s ease-out;
+}
+
+/* Thanh tiến trình chạy qua lại khi chuyển trang */
+@keyframes loading-slide {
+  0% {
+    left: -35%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+.loading-bar {
+  animation: loading-slide 1.1s ease-in-out infinite;
+}
+
+/* Nội dung trang mới hiện dần lên */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-enter {
+  animation: page-enter 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar,
+  .page-enter {
+    animation: none;
+  }
+}

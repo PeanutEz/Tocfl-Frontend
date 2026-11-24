@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment variables (keys live here, never commit them)
+.env
+.env.*
+!.env.example
+
+# Local agent skills / tooling
+.agents/
+.claude/settings.local.json
+.claude/launch.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+npm-debug.log*
