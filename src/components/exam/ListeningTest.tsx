@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { asset } from "@/lib/data";
 import { trackUserAction } from "@/lib/tracking";
 import type { ListeningQuestion } from "@/lib/types";
+import SmartImage from "../SmartImage";
 import { ExamOptions, Feedback, ScoreBoard, SubmitBar, useTestSession } from "./shared";
 
 // Hướng dẫn hiện trước câu đầu tiên của mỗi phần (theo thứ tự câu trong đề 50 câu).
@@ -91,12 +92,12 @@ export default function ListeningTest({ questions }: { questions: ListeningQuest
               </audio>
 
               {q.part === 1 && q.question_image && (
-                <img
+                <SmartImage
                   src={asset(q.question_image)}
                   alt={`Hình câu ${q.id}`}
-                  loading="lazy"
-                  draggable={false}
-                  className="mx-auto mb-4 block h-auto max-w-[min(350px,100%)] rounded-md border border-[#eee]"
+                  className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-[#eee]"
+                  imgClassName="block h-auto w-full"
+                  placeholderClassName="h-[230px]"
                 />
               )}
 

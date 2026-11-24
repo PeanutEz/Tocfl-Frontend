@@ -5,6 +5,7 @@ import { CircleAlert, CircleCheck, CircleX, RotateCcw, Send, Trophy } from "luci
 import { asset } from "@/lib/data";
 import type { ExamOption } from "@/lib/types";
 import { Rich } from "../ui";
+import SmartImage from "../SmartImage";
 
 export type Answers = Record<string, string>;
 
@@ -55,7 +56,8 @@ export function ExamOptions({ name, options, layout, value, correctAnswer, submi
         layout === "text"
           ? "flex flex-col gap-2.5"
           : layout === "image"
-            ? "grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:justify-center sm:gap-4"
+            ? // Màn hình hẹp: mỗi đáp án một hàng dọc; đủ rộng (lg) mới xếp A B C ngang nhau
+              "flex flex-col gap-2.5 lg:flex-row lg:flex-wrap lg:justify-center lg:gap-4"
             : "grid grid-cols-3 gap-2.5 sm:flex sm:flex-wrap sm:justify-center sm:gap-4"
       }
     >
@@ -82,22 +84,30 @@ export function ExamOptions({ name, options, layout, value, correctAnswer, submi
             aria-checked={selected}
             disabled={submitted}
             onClick={() => onSelect(opt.label)}
-            className={`rounded-md border-2 text-left transition disabled:cursor-default ${submitted ? "" : "cursor-pointer"} ${tone} ${
-              layout === "text" ? "flex items-center gap-2.5 px-4 py-3" : layout === "image" ? "p-2 text-center sm:p-2.5" : "px-4 py-3 text-center sm:min-w-24 sm:px-6 sm:py-4"
+            className={`rounded-md border-2 transition disabled:cursor-default ${submitted ? "" : "cursor-pointer"} ${tone} ${
+              layout === "text"
+                ? "flex items-center gap-2.5 px-4 py-3 text-left"
+                : layout === "image"
+                  ? "flex items-center gap-3 px-3 py-2.5 text-left sm:gap-4 sm:px-4 lg:w-[250px] lg:flex-col lg:gap-1 lg:p-2.5 lg:text-center"
+                  : "flex items-center justify-center px-4 py-3 text-center sm:min-w-24 sm:px-6 sm:py-4"
             }`}
           >
-            <strong className={`text-exam ${layout === "label" ? "text-2xl" : "text-base"}`}>
+            <strong
+              className={`text-exam ${
+                layout === "label" ? "text-2xl" : layout === "image" ? "w-7 shrink-0 text-center text-lg lg:w-auto lg:text-base" : "text-base"
+              }`}
+            >
               {opt.label}
-              {layout === "text" && "."}
+              {layout !== "label" && "."}
             </strong>
             {opt.text && <span className={`font-serif-tc text-base text-[#333] ${layout === "image" ? "block" : ""}`}>{opt.text}</span>}
             {opt.image && (
-              <img
+              <SmartImage
                 src={asset(opt.image)}
                 alt={`Đáp án ${opt.label}`}
-                loading="lazy"
-                draggable={false}
-                className="mx-auto mt-1 aspect-square w-full max-w-[200px] rounded object-cover"
+                className="mx-auto aspect-square w-full max-w-[240px] rounded bg-white lg:max-w-[220px]"
+                imgClassName="h-full w-full object-contain"
+                placeholderClassName="h-full"
               />
             )}
           </button>

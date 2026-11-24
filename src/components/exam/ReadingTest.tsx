@@ -6,6 +6,7 @@ import { asset } from "@/lib/data";
 import { trackUserAction } from "@/lib/tracking";
 import type { ReadingSection } from "@/lib/types";
 import { Rich } from "../ui";
+import SmartImage from "../SmartImage";
 import { ExamOptions, Feedback, ScoreBoard, SubmitBar, useTestSession } from "./shared";
 
 export default function ReadingTest({ sections }: { sections: ReadingSection[] }) {
@@ -53,12 +54,12 @@ export default function ReadingTest({ sections }: { sections: ReadingSection[] }
                   />
                 )}
                 {q.question_image && (
-                  <img
+                  <SmartImage
                     src={asset(q.question_image)}
                     alt={`Hình câu ${q.id}`}
-                    loading="lazy"
-                    draggable={false}
-                    className="mx-auto mb-4 block h-auto max-w-[min(350px,100%)] rounded-md border border-[#eee] shadow-[0_2px_5px_rgba(0,0,0,0.1)]"
+                    className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-[#eee] shadow-[0_2px_5px_rgba(0,0,0,0.1)]"
+                    imgClassName="block h-auto w-full"
+                    placeholderClassName="h-[230px]"
                   />
                 )}
                 <Rich as="div" html={q.question_zh} className={`font-serif-tc text-lg font-bold ${q.question_vn ? "mb-1" : "mb-5"}`} />

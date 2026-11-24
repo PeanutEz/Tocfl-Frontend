@@ -3,7 +3,9 @@
 /* Bảng màu giữ đúng như bản HTML gốc */
 @theme {
   --font-sans: "Segoe UI", system-ui, -apple-system, "Microsoft JhengHei", "PingFang TC", Arial, sans-serif;
-  --font-serif-tc: "Noto Serif TC", "PMingLiU", "Songti TC", serif;
+  /* Font Latin có đủ dấu tiếng Việt đứng trước; chữ Hán tự rơi xuống font CJK phía sau.
+     (Đặt PMingLiU trước sẽ làm vỡ dấu: "Đề", "Phần"…) */
+  --font-serif-tc: "Noto Serif", "Times New Roman", "Noto Serif TC", "PMingLiU", "Songti TC", serif;
   --font-kai: "Kaiti TC", "STKaiti", "KaiTi", serif;
 
   --color-page: #f0f2f5;

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { signOut, type User } from "firebase/auth";
-import { ArrowUp, BookOpen, ClipboardCheck, LogOut, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
+import { ArrowUp, BookOpen, ClipboardCheck, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { firebaseAuth } from "@/lib/firebase";
 import { trackUserAction } from "@/lib/tracking";
@@ -13,6 +13,7 @@ import { pauseAllAudio, stopSpeaking } from "@/lib/speech";
 import type { Word } from "@/lib/types";
 import SearchBox, { type Suggestion } from "./SearchBox";
 import MobileMenu from "./MobileMenu";
+import AccountMenu from "./AccountMenu";
 import DictionaryTab from "./dictionary/DictionaryTab";
 import DialogueTab, { type DialogueFocus } from "./dialogue/DialogueTab";
 import ExamTab from "./exam/ExamTab";
@@ -234,19 +235,9 @@ export default function MainApp({ user }: { user: User }) {
       <header className="rounded-t-lg bg-brand px-4 pt-3 text-center text-white sm:px-5 sm:pt-4">
         <div className="mb-1 flex items-center justify-center gap-3 sm:justify-between">
           <span className="rounded bg-white/15 px-2.5 py-1 text-xs font-semibold tracking-wide sm:text-sm">國立臺南大學 NUTN</span>
-          <div className="hidden items-center gap-3 sm:flex">
-            <span className="hidden max-w-[240px] truncate text-sm text-white/80 sm:inline" title={user.email ?? ""}>
-              {user.email}
-            </span>
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={signingOut}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-[#666] px-3.5 py-1.5 text-sm font-medium text-white transition hover:bg-[#555] disabled:opacity-60"
-            >
-              <LogOut size={16} />
-              {signingOut ? "Đang đăng xuất…" : "Đăng xuất"}
-            </button>
+          {/* Màn hình nhỏ dùng menu hamburger nên chỉ hiện từ sm trở lên */}
+          <div className="hidden sm:block">
+            <AccountMenu email={user.email ?? ""} signingOut={signingOut} onLogout={handleLogout} />
           </div>
         </div>
 

@@ -1,19 +1,33 @@
 "use client";
 
 import { Fragment, useMemo } from "react";
-import { Lightbulb } from "lucide-react";
+import { ScrollText, Sparkles } from "lucide-react";
 import { asset } from "@/lib/data";
 import { hanziOf } from "@/lib/text";
 import { speakWord } from "@/lib/speech";
 import type { Word } from "@/lib/types";
-import { EmptyNote, Rich, SpeakButton } from "../ui";
+import { EmptyNote, Rich, RichLines, SpeakButton } from "../ui";
 import StrokeOrder from "./StrokeOrder";
+import SmartImage from "../SmartImage";
 
 function parseIdiom(raw = "") {
-  // Định dạng dữ liệu: "成語 (chéngyǔ) - nghĩa tiếng Việt"
-  const [zhAndPy = "", vn = ""] = raw.split("-").map((s) => s.trim());
-  const zhOnly = zhAndPy.split("(")[0].trim();
-  return { zhAndPy, vn, zhOnly };
+  // Định dạng dữ liệu: "成語 (chéngyǔ) - nghĩa tiếng Việt<br>Ví dụ: …"
+  // (A1 có vài mục dạng "Tục ngữ: … - …")
+  let text = raw.trim();
+  const proverb = /^Tục ngữ\s*[:：]/.test(text);
+  if (proverb) text = text.replace(/^Tục ngữ\s*[:：]\s*/, "");
+
+  // Chỉ tách ở dấu gạch đầu tiên: phần nghĩa / ví dụ phía sau cũng có thể chứa dấu "-"
+  const cut = text.indexOf(" - ") >= 0 ? text.indexOf(" - ") : text.indexOf("-");
+  const zhAndPy = (cut >= 0 ? text.slice(0, cut) : text).trim();
+  const vn = (cut >= 0 ? text.slice(cut + (text.startsWith(" - ", cut) ? 3 : 1)) : "").trim();
+
+  // Câu để phát âm: đoạn chữ Hán dài nhất ở dòng đầu (không đọc phần ví dụ)
+  const firstLine = text.split(/<br\s*\/?>/i)[0];
+  const runs = firstLine.match(/[㐀-鿿豈-﫿]+/g) ?? [];
+  const zhOnly = runs.reduce((a, b) => (b.length > a.length ? b : a), "") || zhAndPy.split("(")[0].trim();
+
+  return { zhAndPy, vn, zhOnly, proverb };
 }
 
 const Label = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -52,14 +66,14 @@ export default function WordCard({ item }: { item: Word }) {
 
         {item.image && (
           <div className="h-[300px] w-full max-w-[300px] shrink-0 overflow-hidden rounded-lg border-[5px] border-white bg-[#f9f9f9] shadow-[0_8px_20px_rgba(0,0,0,0.15)] md:h-[250px] md:w-[250px]">
-            <img src={asset(item.image)} alt={`Minh hoạ cho từ ${item.word}`} className="h-full w-full object-cover" loading="lazy" draggable={false} />
+            <SmartImage src={asset(item.image)} alt={`Minh hoạ cho từ ${item.word}`} className="h-full w-full" imgClassName="h-full w-full object-contain" placeholderClassName="h-full" />
           </div>
         )}
       </div>
 
       <section className="mt-[15px] rounded-md border-l-4 border-[#1abc9c] bg-[#e8f6f3] p-3">
         <Label className="text-[#16a085]">BỘ THỦ & CẤU TẠO (部首)</Label>
-        <Rich as="p" html={item.radical} className="m-0 text-[1.1em] text-ink" />
+        <RichLines html={item.radical} className="text-[1.1em] text-ink" />
       </section>
 
       <StrokeOrder chars={chars} pinyin={item.pinyin} hanViet={item.hanViet} />
@@ -115,12 +129,12 @@ export default function WordCard({ item }: { item: Word }) {
       {idiom.zhAndPy && (
         <section className="mt-[15px] rounded-md border-l-4 border-gold bg-[#fffbe6] p-3">
           <div className="flex flex-wrap items-center gap-x-2">
-            <Lightbulb size={20} className="text-gold" />
-            <strong>Thành ngữ / cụm từ hay:</strong>
+            {idiom.proverb ? <ScrollText size={20} className="text-gold" /> : <Sparkles size={20} className="text-gold" />}
+            <strong>{idiom.proverb ? "Tục ngữ:" : "Thành ngữ / cụm từ hay:"}</strong>
             <Rich html={idiom.zhAndPy} className="font-bold text-[#d35400]" />
             <SpeakButton text={idiom.zhOnly} size={18} />
           </div>
-          {idiom.vn && <Rich as="div" html={`Nghĩa: ${idiom.vn}`} className="mt-1 text-[0.9em] text-[#555]" />}
+          {idiom.vn && <RichLines html={`Nghĩa: ${idiom.vn}`} className="mt-1 text-[0.9em] text-[#555]" />}
         </section>
       )}
     </article>

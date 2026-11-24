@@ -103,19 +103,22 @@ export default function DialogueCard({ id, dialogue: g, flash, isPlaying, speed,
       <div className="mb-8 space-y-5">
         {g.content.map((line, i) => {
           const male = line.gender === "male";
-          const color = male ? "#3498db" : "#e74c3c";
+          // Bài đọc (đoạn văn) không có tên người nói: hiện icon sách, màu trung tính
+          const narrator = !line.sp.trim();
+          const color = narrator ? "#7f8c8d" : male ? "#3498db" : "#e74c3c";
           return (
             <div key={i} className="flex gap-2.5 sm:gap-4">
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base font-bold text-white sm:h-10 sm:w-10"
                 style={{ background: color }}
                 aria-hidden
+                title={narrator ? "Bài đọc" : line.sp}
               >
-                {line.sp.charAt(0)}
+                {narrator ? <BookOpenText size={18} /> : line.sp.charAt(0)}
               </div>
               <div className="min-w-0 grow rounded-lg border-l-4 bg-[#f8f9fa] px-3 py-2.5 sm:px-5 sm:py-3" style={{ borderLeftColor: color }}>
                 <div className="text-[19px] font-bold sm:text-[22px]">
-                  {line.sp}: {line.zh}
+                  {narrator ? line.zh : `${line.sp}: ${line.zh}`}
                   <SpeakButton text={line.zh} onSpeak={() => onPlayLine(line.zh, line.gender)} className="ml-1" />
                 </div>
                 <div className="my-1 text-[17px] text-link">{line.py}</div>
