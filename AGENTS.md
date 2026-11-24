@@ -126,7 +126,7 @@ Giao diện phải trông như sản phẩm do người làm, phong cách doanh 
 
 ## Deploy
 
-`npm run build` sinh thư mục `out/`. Site được deploy bằng **Cloudflare Workers**. GitHub Actions chỉ kiểm tra (CI), không deploy. Nếu sau này deploy dưới đường dẫn con (vd `https://<user>.github.io/Tocfl/`), đặt `NEXT_PUBLIC_BASE_PATH=/Tocfl` lúc build.
+`npm run build` sinh thư mục `out/`. Site được deploy bằng **Cloudflare Workers** tại https://tocfl.honghbvn.workers.dev/. GitHub Actions chỉ kiểm tra (CI), không deploy. Nếu sau này deploy dưới đường dẫn con (vd `https://<user>.github.io/Tocfl/`), đặt `NEXT_PUBLIC_BASE_PATH=/Tocfl` lúc build.
 
 ### Cloudflare Workers
 
