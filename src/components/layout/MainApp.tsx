@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import LoadingScreen from "@/components/ui/LoadingScreen";
+import { useEffect, useMemo, useState } from "react";
 import { signOut } from "firebase/auth";
 import { useUser } from "@/components/auth/AuthGate";
 import { ArrowUp, BookOpen, ClipboardCheck, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
@@ -31,8 +30,6 @@ const TABS: { id: TabId; label: string; icon: LucideIcon; trackDetail: string }[
 ];
 
 const INACTIVITY_MS = 30 * 60 * 1000;
-// Thời gian hiện màn hình chờ (kèm câu cảm hứng) mỗi lần chuyển tab
-const TAB_LOADING_MS = 1750;
 
 /** Ghi nhận đóng tab và treo máy 30 phút (giữ nguyên cách ghi của bản cũ). */
 function useSessionTracking() {
@@ -69,9 +66,6 @@ export default function MainApp() {
   const [tab, setTab] = useState<TabId>("dict");
   const [signingOut, setSigningOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [tabLoading, setTabLoading] = useState<TabId | null>(null);
-  const tabTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => () => clearTimeout(tabTimer.current), []);
   const scrollY = useScrollY();
   const scrolled = scrollY > 120; // phần tiêu đề đã cuộn khuất, thanh tìm kiếm đang dính
   const showToTop = scrollY > 500;
@@ -136,25 +130,17 @@ export default function MainApp() {
   const [focus, setFocus] = useState<DialogueFocus | null>(null);
 
   function switchTab(next: TabId) {
-    if (tabLoading) return; // đang chờ chuyển tab thì bỏ qua các lần bấm khác
     // Bản gốc ghi nhận mọi lần bấm tab, kể cả bấm lại tab đang mở: giữ nguyên để số liệu luận văn nhất quán
     trackUserAction("SwitchTab", TABS.find((t) => t.id === next)!.trackDetail);
     if (next === tab) return;
     stopSpeaking();
     pauseAllAudio();
-
-    // Hiện màn hình chờ (kèm câu cảm hứng) rồi mới mở tab mới
-    setTabLoading(next);
-    tabTimer.current = setTimeout(() => {
-      if (next === "speak") {
-        // Vào lại tab hội thoại thì bắt đầu từ bài đầu tiên, xoá kết quả tìm cũ
-        setDiagQuery("");
-        setFocus(null);
-      }
-      setTab(next);
-      setTabLoading(null);
-      window.scrollTo({ top: 0 });
-    }, TAB_LOADING_MS);
+    if (next === "speak") {
+      // Vào lại tab hội thoại thì bắt đầu từ bài đầu tiên, xoá kết quả tìm cũ
+      setDiagQuery("");
+      setFocus(null);
+    }
+    setTab(next);
   }
 
   function handleLogout() {
@@ -316,8 +302,6 @@ export default function MainApp() {
         </nav>
       </div>
 
-      {tabLoading && <LoadingScreen label={`Đang mở ${TABS.find((t) => t.id === tabLoading)!.label}…`} />}
-
       <MobileMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
@@ -326,6 +310,7 @@ export default function MainApp() {
         onSelect={(id) => {
           setMenuOpen(false);
           switchTab(id as TabId);
+          window.scrollTo({ top: 0 });
         }}
         email={user.email ?? ""}
         signingOut={signingOut}
