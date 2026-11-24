@@ -3,9 +3,9 @@
 import { useRef, useState } from "react";
 import { CircleAlert, CircleCheck, CircleX, RotateCcw, Send, Trophy } from "lucide-react";
 import { asset } from "@/lib/data";
-import type { ExamOption } from "@/lib/types";
-import { Rich } from "../ui";
-import SmartImage from "../SmartImage";
+import type { ExamOption } from "@/types";
+import { Rich } from "@/components/ui";
+import SmartImage from "@/components/ui/SmartImage";
 
 export type Answers = Record<string, string>;
 

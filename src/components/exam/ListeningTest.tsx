@@ -4,8 +4,8 @@ import { Headphones } from "lucide-react";
 import { toast } from "sonner";
 import { asset } from "@/lib/data";
 import { trackUserAction } from "@/lib/tracking";
-import type { ListeningQuestion } from "@/lib/types";
-import SmartImage from "../SmartImage";
+import type { ListeningQuestion } from "@/types";
+import SmartImage from "@/components/ui/SmartImage";
 import { ExamOptions, Feedback, ScoreBoard, SubmitBar, useTestSession } from "./shared";
 
 // Hướng dẫn hiện trước câu đầu tiên của mỗi phần (theo thứ tự câu trong đề 50 câu).

@@ -1,5 +1,5 @@
 import { normalizeVi, removeTones } from "./text";
-import type { Dialogue } from "./types";
+import type { Dialogue } from "@/types";
 
 export const DEFAULT_LEVEL = "TOCFL A1";
 

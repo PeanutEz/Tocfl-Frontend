@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
-import { GraduationCap, Loader2, Lock, LogIn, Mail } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Loader2, Lock, LogIn, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { firebaseAuth } from "@/lib/firebase";
 
@@ -26,6 +26,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -52,7 +53,7 @@ export default function LoginScreen() {
 
   return (
     <div className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center">
-      <div className="rounded-lg bg-white px-8 py-10 text-center shadow-[0_5px_15px_rgba(0,0,0,0.1)]">
+      <div className="slide-down rounded-lg bg-white px-6 py-9 text-center shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:px-8 sm:py-10">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-accent/10 text-accent">
           <GraduationCap size={30} />
         </div>
@@ -75,13 +76,23 @@ export default function LoginScreen() {
           <label className={inputWrap}>
             <Lock size={18} className="text-muted" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               placeholder="Mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-transparent py-2.5 outline-none"
+              className="w-full bg-transparent py-2.5 outline-none [&::-ms-reveal]:hidden"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              aria-pressed={showPassword}
+              title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              className="-mr-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted transition hover:bg-page hover:text-ink"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </label>
 
           {error && <p className="text-sm text-danger">{error}</p>}

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { BookOpenText, FileText, Headphones } from "lucide-react";
-import { loadExam, useAsync } from "@/lib/data";
+import { loadExam } from "@/lib/data";
+import { useAsync } from "@/hooks/use-async";
 import { pauseAllAudio } from "@/lib/speech";
-import { ErrorBlock, LoadingBlock } from "../ui";
+import { ErrorBlock, LoadingBlock } from "@/components/ui";
 import ListeningTest from "./ListeningTest";
 import ReadingTest from "./ReadingTest";
 

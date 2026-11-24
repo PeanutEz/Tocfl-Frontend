@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { lessonsOf, levelOf, levelsOf, DEFAULT_LEVEL } from "@/lib/dialogues";
 import { SPEEDS, speakLine, stopSpeaking } from "@/lib/speech";
-import type { Dialogue } from "@/lib/types";
-import { EmptyNote, ErrorBlock, LoadingBlock } from "../ui";
+import type { Dialogue } from "@/types";
+import { EmptyNote, ErrorBlock, LoadingBlock } from "@/components/ui";
 import DialogueCard from "./DialogueCard";
 
 export type DialogueFocus = { level: string; lesson: string; index: number; nonce: number };

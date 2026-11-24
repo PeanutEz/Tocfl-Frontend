@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Loader2, SearchX } from "lucide-react";
-import type { Word } from "@/lib/types";
-import { ErrorBlock } from "../ui";
+import type { Word } from "@/types";
+import { ErrorBlock } from "@/components/ui";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import Pagination from "./Pagination";
 import WordCard from "./WordCard";
 import WordCardSkeleton from "./WordCardSkeleton";
 
 const PAGE_SIZE = 10;
-const PAGE_LOADING_MS = 450;
+// Thời gian hiện màn hình chờ (kèm câu cảm hứng) mỗi lần chuyển trang
+const PAGE_LOADING_MS = 1750;
 
 type Props = {
   state: { data: Word[] | null; error: Error | null };
@@ -78,7 +80,11 @@ export default function DictionaryTab({ state, items, page, onPageChange }: Prop
   return (
     <section ref={listRef} className="scroll-mt-24 sm:scroll-mt-32">
       {pending !== null ? (
-        <PageLoading label={`Đang tải trang ${pending}/${totalPages}…`} />
+        <>
+          {/* Màn hình chờ toàn trang; khung xương bên dưới giữ bố cục khi màn hình chờ đóng lại */}
+          <LoadingScreen label={`Đang tải trang ${pending}/${totalPages}…`} />
+          <PageLoading label={`Đang tải trang ${pending}/${totalPages}…`} />
+        </>
       ) : (
         <>
           <p className="text-right text-sm text-muted">

@@ -1,8 +1,8 @@
 "use client";
 
 import { BookOpenText, Gauge, ListChecks, PencilLine, Play, Square } from "lucide-react";
-import type { ChoiceOption, Dialogue } from "@/lib/types";
-import { SpeakButton } from "../ui";
+import type { ChoiceOption, Dialogue } from "@/types";
+import { SpeakButton } from "@/components/ui";
 import { SPEEDS } from "@/lib/speech";
 import ChoiceExercise, { type ExerciseItem } from "./ChoiceExercise";
 
