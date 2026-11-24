@@ -1,0 +1,11 @@
+// Cấu hình Cloudflare Workers: site là static export (thư mục `out/` sau `npm run build`),
+// không có code chạy phía server. Có file này thì `wrangler deploy` không tự đoán cấu hình Next.js nữa.
+{
+  // Phải trùng tên Worker trên Cloudflare Dashboard
+  "name": "tocfl-frontend",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  }
+}

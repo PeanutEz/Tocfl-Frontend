@@ -90,4 +90,14 @@ GitHub Pages được deploy tự động qua `.github/workflows/deploy.yml`, ch
 2. **Settings → Secrets and variables → Actions:** thêm 7 secret `NEXT_PUBLIC_FIREBASE_*` (tên giống `.env.example`).
 3. **Firebase Console → Authentication → Settings → Authorized domains:** thêm domain của Pages (vd `<user>.github.io`).
 
+### Cloudflare Workers
+
+`wrangler.jsonc` cấu hình Worker chỉ phục vụ file tĩnh từ `./out`, không có code server. Thiếu file này thì `wrangler deploy` sẽ tự cấu hình Next.js theo kiểu có server (OpenNext) và báo lỗi.
+
+- **Build command:** `npm run build`. **Deploy command:** `npx wrangler deploy`.
+- Trường `name` trong `wrangler.jsonc` phải trùng tên Worker trên Dashboard.
+- Biến `NEXT_PUBLIC_FIREBASE_*` đặt ở **Settings → Build → Variables and secrets** (biến lúc build), không phải biến runtime của Worker.
+- Không đặt `NEXT_PUBLIC_BASE_PATH`, vì site chạy ở domain gốc.
+- Thêm domain `*.workers.dev` (hoặc domain riêng) vào Firebase Authorized domains.
+
 Bản HTML/JS tĩnh trước khi chuyển sang Next.js được giữ ở tag git `backup/static-site-2026-11-24`.
