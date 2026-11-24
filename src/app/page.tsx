@@ -1,5 +1,11 @@
-import App from "@/components/App";
+import AuthGate from "@/components/auth/AuthGate";
+import MainApp from "@/components/layout/MainApp";
 
-export default function Page() {
-  return <App />;
+/** Trang chủ "/": từ điển, hội thoại, luyện thi. */
+export default function HomePage() {
+  return (
+    <AuthGate>
+      <MainApp />
+    </AuthGate>
+  );
 }

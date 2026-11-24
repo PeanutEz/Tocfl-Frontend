@@ -99,9 +99,39 @@ img {
   animation: page-enter 0.35s ease-out;
 }
 
+/* Khung đăng nhập trượt từ trên xuống khi vừa mở trang */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.slide-down {
+  animation: slide-down 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Màn hình chờ: câu trích dẫn hiện dần */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fade-in 0.6s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .loading-bar,
-  .page-enter {
+  .page-enter,
+  .slide-down,
+  .fade-in {
     animation: none;
   }
 }

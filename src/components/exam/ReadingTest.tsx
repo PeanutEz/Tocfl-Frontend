@@ -4,9 +4,9 @@ import { BookOpenText } from "lucide-react";
 import { toast } from "sonner";
 import { asset } from "@/lib/data";
 import { trackUserAction } from "@/lib/tracking";
-import type { ReadingSection } from "@/lib/types";
-import { Rich } from "../ui";
-import SmartImage from "../SmartImage";
+import type { ReadingSection } from "@/types";
+import { Rich } from "@/components/ui";
+import SmartImage from "@/components/ui/SmartImage";
 import { ExamOptions, Feedback, ScoreBoard, SubmitBar, useTestSession } from "./shared";
 
 export default function ReadingTest({ sections }: { sections: ReadingSection[] }) {

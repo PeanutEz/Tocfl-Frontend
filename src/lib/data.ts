@@ -1,7 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import type { Dialogue, Exam, Word } from "./types";
+import type { Dialogue, Exam, Word } from "@/types";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -34,23 +31,3 @@ export const loadDictionary = () =>
 export const loadDialogues = () => loadJson<Dialogue[]>("dialogues.json");
 
 export const loadExam = (id: string) => loadJson<Exam>(`exams/${id}.json`);
-
-type AsyncState<T> = { data: T | null; error: Error | null };
-
-export function useAsync<T>(loader: () => Promise<T>, deps: unknown[]): AsyncState<T> {
-  const [state, setState] = useState<AsyncState<T>>({ data: null, error: null });
-
-  useEffect(() => {
-    let active = true;
-    setState({ data: null, error: null });
-    loader()
-      .then((data) => active && setState({ data, error: null }))
-      .catch((error: Error) => active && setState({ data: null, error }));
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-
-  return state;
-}

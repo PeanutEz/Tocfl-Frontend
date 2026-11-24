@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { Loader2, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import { firebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
 import { trackUserAction } from "@/lib/tracking";
 import LoginScreen from "./LoginScreen";
-import MainApp from "./MainApp";
+
+const UserContext = createContext<User | null>(null);
+
+/** Người dùng đang đăng nhập. Chỉ gọi bên trong <AuthGate>. */
+export function useUser(): User {
+  const user = useContext(UserContext);
+  if (!user) throw new Error("useUser() phải được dùng bên trong <AuthGate>.");
+  return user;
+}
 
 const isEditable = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
@@ -34,7 +43,12 @@ function useCopyProtection() {
   }, []);
 }
 
-export default function App() {
+/**
+ * Bọc một trang cần đăng nhập: chưa đăng nhập thì hiện màn hình đăng nhập,
+ * đã đăng nhập thì hiện nội dung và cho phép lấy user qua useUser().
+ * Kèm luôn chống sao chép và ghi nhận sự kiện "Login" như bản gốc.
+ */
+export default function AuthGate({ children }: { children: React.ReactNode }) {
   // undefined = đang kiểm tra phiên đăng nhập
   const [user, setUser] = useState<User | null | undefined>(isFirebaseConfigured ? undefined : null);
   useCopyProtection();
@@ -61,13 +75,9 @@ export default function App() {
     );
   }
 
-  if (user === undefined) {
-    return (
-      <div className="flex min-h-[70vh] items-center justify-center text-muted">
-        <Loader2 className="animate-spin" size={32} />
-      </div>
-    );
-  }
+  if (user === undefined) return <LoadingScreen />;
 
-  return user ? <MainApp user={user} /> : <LoginScreen />;
+  if (!user) return <LoginScreen />;
+
+  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
 }

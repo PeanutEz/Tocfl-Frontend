@@ -1,4 +1,4 @@
-import type { Word } from "./types";
+import type { Word } from "@/types";
 
 /** Bỏ dấu thanh pinyin và khoảng trắng để gõ "qingwen" vẫn tìm ra "qǐngwèn". */
 export function removeTones(str: string): string {

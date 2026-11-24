@@ -5,10 +5,10 @@ import { ScrollText, Sparkles } from "lucide-react";
 import { asset } from "@/lib/data";
 import { hanziOf } from "@/lib/text";
 import { speakWord } from "@/lib/speech";
-import type { Word } from "@/lib/types";
-import { EmptyNote, Rich, RichLines, SpeakButton } from "../ui";
+import type { Word } from "@/types";
+import { EmptyNote, Rich, RichLines, SpeakButton } from "@/components/ui";
 import StrokeOrder from "./StrokeOrder";
-import SmartImage from "../SmartImage";
+import SmartImage from "@/components/ui/SmartImage";
 
 function parseIdiom(raw = "") {
   // Định dạng dữ liệu: "成語 (chéngyǔ) - nghĩa tiếng Việt<br>Ví dụ: …"
