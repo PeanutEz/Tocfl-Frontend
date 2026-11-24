@@ -12,7 +12,7 @@ Web học tiếng Hoa và luyện thi **TOCFL** cho sinh viên Việt Nam tại 
 
 - Hơn 1.100 từ vựng, mỗi từ có pinyin, IPA, âm Hán Việt, bộ thủ và cấu tạo chữ, mẹo nhớ, từ ghép, câu ví dụ, thành ngữ.
 - Tra được theo chữ Hán, pinyin (có hoặc không dấu), âm Hán Việt hoặc nghĩa tiếng Việt (có hoặc không dấu). Kết quả xếp theo mức độ khớp.
-- Phát âm giọng Đài Loan (zh-TW) cho từ, từ ghép, câu ví dụ và thành ngữ.
+- Ưu tiên file MP3 giọng Microsoft Neural nữ Đài Loan (zh-TW, chậm 10%) cho mục đã tạo sẵn; mục chưa có file dùng Web Speech API.
 - Hoạt hình thứ tự nét tự chạy khi cuộn tới chữ; tải mẫu luyện viết dạng ô vuông để in hoặc lưu PDF.
 - Phân trang; trang, từ khoá và tab đang mở được lưu trên URL nên tải lại hoặc gửi link vẫn mở đúng chỗ.
 
@@ -58,6 +58,7 @@ npm run dev                  # http://localhost:3000
 | `npm run dev` | Chạy bản phát triển |
 | `npm run typecheck` | Kiểm tra kiểu TypeScript |
 | `npm run build` | Build site tĩnh ra thư mục `out/` |
+| `npm run generate-audio` | Tạo MP3 cho toàn bộ từ, từ ghép, ví dụ và thành ngữ trong dữ liệu từ điển |
 
 ### Biến môi trường
 
@@ -82,7 +83,7 @@ src/
 public/
   data/         từ vựng, hội thoại, đề thi (JSON)
   images/       hình đề thi
-  audio/        file nghe đề thi (mp3)
+  audio/        file nghe đề thi và MP3 phát âm SHA-1 trong words/
 ```
 
 Quy ước code, quy tắc giao diện và cách thêm trang / đề thi mới: xem [AGENTS.md](AGENTS.md).
