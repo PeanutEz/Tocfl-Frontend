@@ -101,7 +101,7 @@ export default function WordNav({ items, page, totalPages }: Props) {
       {/* Desktop: cột dính bên phải */}
       <aside
         aria-label="Danh sách từ trong trang"
-        className={`sticky top-36 hidden shrink-0 self-start rounded-lg border border-line bg-surface shadow-[0_2px_6px_rgba(0,0,0,0.06)] transition-[width] lg:block ${
+        className={`sticky top-36 mt-4 hidden shrink-0 self-start rounded-lg border border-line bg-surface shadow-[0_2px_6px_rgba(0,0,0,0.06)] transition-[width] lg:block ${
           expanded ? "w-64" : "w-11"
         }`}
       >

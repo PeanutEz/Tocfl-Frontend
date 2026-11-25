@@ -5,6 +5,7 @@ import { Loader2, SearchX } from "lucide-react";
 import type { Word } from "@/types";
 import { ErrorBlock } from "@/components/ui";
 import LoadingScreen, { LOADING_MIN_MS } from "@/components/ui/LoadingScreen";
+import PageJump from "./PageJump";
 import Pagination from "./Pagination";
 import WordCard from "./WordCard";
 import WordCardSkeleton from "./WordCardSkeleton";
@@ -92,10 +93,10 @@ export default function DictionaryTab({ state, items, page, onPageChange }: Prop
         </>
       ) : (
         <>
-          <p className="text-right text-sm text-muted">
-            {items.length.toLocaleString("vi-VN")} từ
-            {totalPages > 1 && ` · Trang ${page}/${totalPages}`}
-          </p>
+          <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm text-muted">
+            <span>{items.length.toLocaleString("vi-VN")} từ</span>
+            {totalPages > 1 && <PageJump page={page} totalPages={totalPages} onChange={goTo} />}
+          </div>
           <div className="lg:flex lg:items-start lg:gap-4">
             <div className="page-enter min-w-0 flex-1">
               {pageItems.map(({ index, item }) => (
