@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { List, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { glossesOf } from "@/lib/text";
 import type { Word } from "@/types";
@@ -13,6 +13,13 @@ type Props = {
   items: { index: number; item: Word }[];
   page: number;
   totalPages: number;
+  /** Tổng số từ của kết quả, hiện trong khung desktop. */
+  total: number;
+  /** Ô chuyển trang, đặt trong khung desktop để dính theo danh sách khi cuộn. */
+  pager?: ReactNode;
+  /** Khung desktop đang mở rộng hay thu gọn (do DictionaryTab giữ để ẩn / hiện thanh trang phía trên). */
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
 };
 
 /**
@@ -20,8 +27,7 @@ type Props = {
  * Desktop (lg): cột dính bên phải, thu gọn / mở rộng được.
  * Màn hình hẹp: nút nổi góc dưới phải, bấm để mở danh sách.
  */
-export default function WordNav({ items, page, totalPages }: Props) {
-  const [expanded, setExpanded] = useState(true);
+export default function WordNav({ items, page, totalPages, total, pager, expanded, onExpandedChange: setExpanded }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [current, setCurrent] = useState<string | null>(null);
 
@@ -101,14 +107,17 @@ export default function WordNav({ items, page, totalPages }: Props) {
       {/* Desktop: cột dính bên phải */}
       <aside
         aria-label="Danh sách từ trong trang"
-        className={`sticky top-36 mt-4 hidden shrink-0 self-start rounded-lg border border-line bg-surface shadow-[0_2px_6px_rgba(0,0,0,0.06)] transition-[width] lg:block ${
-          expanded ? "w-64" : "w-11"
+        className={`sticky mt-4 hidden shrink-0 self-start rounded-lg border border-line bg-surface shadow-[0_2px_6px_rgba(0,0,0,0.06)] transition-[width] lg:block ${
+          expanded ? "top-[calc(var(--sticky-h,4.5rem)+0.75rem)] w-64" : "top-[calc(var(--sticky-h,4.5rem)+3.5rem)] w-11"
         }`}
       >
         {expanded ? (
-          <div className="flex max-h-[calc(100vh-10rem)] flex-col p-3">
+          <div className="flex max-h-[calc(100vh-var(--sticky-h,4.5rem)-1.5rem)] flex-col p-3">
             <div className="mb-2 flex items-start justify-between gap-2">
-              {heading}
+              <div>
+                <p className="text-sm font-bold text-brand">Từ trong trang</p>
+                <p className="text-xs text-muted">Tổng {total.toLocaleString("vi-VN")} từ</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setExpanded(false)}
@@ -119,6 +128,7 @@ export default function WordNav({ items, page, totalPages }: Props) {
                 <PanelRightClose size={18} />
               </button>
             </div>
+            {pager && <div className="mb-2 flex justify-center border-b border-line pb-2 text-sm text-muted">{pager}</div>}
             <div className="-mx-1 min-h-0 overflow-y-auto px-1">{list}</div>
           </div>
         ) : (

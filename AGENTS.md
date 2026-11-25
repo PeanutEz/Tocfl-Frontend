@@ -147,5 +147,6 @@ Giao diện phải trông như sản phẩm do người làm, phong cách doanh 
 - `AZURE_TRANSLATOR_KEY`, `AZURE_TRANSLATOR_REGION`, `AZURE_TRANSLATOR_ENDPOINT`, `FIREBASE_PROJECT_ID` đặt ở **Settings → Variables and secrets** của Worker (biến runtime, loại Secret). Không đặt `NEXT_PUBLIC_TRANSLATE_API` khi build production.
 - Chạy thử tab Dịch ở local: `npm run dev` đã chạy kèm Worker (`scripts/dev.mjs`; Wrangler đọc `.env.local`). Khi dev, Worker dùng thư mục tĩnh rỗng `.wrangler/dev-assets` thay cho `out/`: `out/` có hàng nghìn file audio làm Wrangler treo lúc khởi động. Cần đặt `NEXT_PUBLIC_TRANSLATE_API=http://127.0.0.1:8787/api/translate` trong `.env.local`.
 - Thêm domain `*.workers.dev` (hoặc domain riêng) vào Firebase Authorized domains.
+- **Turnstile (màn đăng nhập):** `TURNSTILE_SITE_KEY` là biến lúc build (`next.config.ts` ánh xạ sang `NEXT_PUBLIC_TURNSTILE_SITE_KEY`), `TURNSTILE_SECRET_KEY` là Secret runtime của Worker (`/api/turnstile` gọi siteverify). Widget trên Cloudflare phải có hostname `localhost` và domain deploy, nếu không sẽ báo lỗi 110200. Bỏ trống site key thì màn đăng nhập bỏ qua bước xác minh.
 
 Bản HTML/JS tĩnh trước khi chuyển sang Next.js được giữ ở tag git `backup/static-site-2026-11-24`.

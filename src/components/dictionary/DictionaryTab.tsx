@@ -41,6 +41,7 @@ function PageLoading({ label }: { label: string }) {
 
 export default function DictionaryTab({ state, items, page, onPageChange }: Props) {
   const [pending, setPending] = useState<number | null>(null);
+  const [navOpen, setNavOpen] = useState(true);
   const listRef = useRef<HTMLElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -93,7 +94,13 @@ export default function DictionaryTab({ state, items, page, onPageChange }: Prop
         </>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm text-muted">
+          {/* Dính ngay dưới thanh tìm kiếm khi cuộn (--sticky-h do MainApp đo).
+              Desktop khi khung "Từ trong trang" mở: ô chuyển trang nằm trong khung đó nên ẩn thanh này. */}
+          <div
+            className={`sticky top-[var(--sticky-h,4.5rem)] z-30 -mx-1 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 bg-page px-1 py-1.5 text-sm text-muted ${
+              navOpen ? "lg:hidden" : ""
+            }`}
+          >
             <span>{items.length.toLocaleString("vi-VN")} từ</span>
             {totalPages > 1 && <PageJump page={page} totalPages={totalPages} onChange={goTo} />}
           </div>
@@ -105,7 +112,15 @@ export default function DictionaryTab({ state, items, page, onPageChange }: Prop
                 </div>
               ))}
             </div>
-            <WordNav items={pageItems} page={page} totalPages={totalPages} />
+            <WordNav
+              items={pageItems}
+              page={page}
+              totalPages={totalPages}
+              total={items.length}
+              pager={totalPages > 1 ? <PageJump page={page} totalPages={totalPages} onChange={goTo} /> : undefined}
+              expanded={navOpen}
+              onExpandedChange={setNavOpen}
+            />
           </div>
         </>
       )}

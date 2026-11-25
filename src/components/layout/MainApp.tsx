@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { signOut } from "firebase/auth";
 import { useUser } from "@/components/auth/AuthGate";
 import { ArrowUp, BookOpen, ClipboardCheck, Languages, LayoutGrid, Menu, MessagesSquare, Puzzle, type LucideIcon } from "lucide-react";
@@ -81,6 +81,21 @@ export default function MainApp() {
   // Số câu đã chọn mà chưa nộp khi bấm đăng xuất (null = không hỏi)
   const [logoutUnsaved, setLogoutUnsaved] = useState<number | null>(null);
   const scrollY = useScrollY();
+  // Chiều cao thanh dính, ghi vào biến CSS --sticky-h để các thanh dính bên dưới (vd thanh trang của từ điển) nằm ngay dưới nó
+  const stickyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = stickyRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const update = () => root.style.setProperty("--sticky-h", `${el.offsetHeight}px`);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty("--sticky-h");
+    };
+  }, []);
   const scrolled = scrollY > 120; // phần tiêu đề đã cuộn khuất, thanh tìm kiếm đang dính
   const showToTop = scrollY > 500;
   useSessionTracking();
@@ -315,6 +330,7 @@ export default function MainApp() {
       {/* Thanh tìm kiếm + tab: dính lên đầu màn hình khi cuộn xuống.
           Màn hình nhỏ: một hàng gồm nút menu + ô tìm kiếm, các tab nằm trong menu trượt. */}
       <div
+        ref={stickyRef}
         className={`sticky top-0 z-40 rounded-b-lg bg-brand px-2.5 pb-2.5 pt-2.5 text-center text-white transition-shadow sm:px-4 sm:py-2.5 ${
           scrolled ? "shadow-[0_8px_24px_rgba(0,0,0,0.25)]" : ""
         }`}

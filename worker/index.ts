@@ -10,6 +10,8 @@ interface Env {
   FIREBASE_PROJECT_ID?: string;
   /** Lúc chạy `wrangler dev`, Wrangler đọc `.env.local` nên có sẵn biến này. */
   NEXT_PUBLIC_FIREBASE_PROJECT_ID?: string;
+  /** Secret key Cloudflare Turnstile, dùng cho `/api/turnstile` (màn đăng nhập). */
+  TURNSTILE_SECRET_KEY?: string;
 }
 
 const MAX_CHARS = 100;
@@ -20,6 +22,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/api/translate") return handleTranslate(request, env);
+    if (url.pathname === "/api/turnstile") return handleTurnstile(request, env);
     return env.ASSETS.fetch(request);
   },
 };
@@ -172,5 +175,40 @@ async function handleTranslate(request: Request, env: Env): Promise<Response> {
     });
   } catch {
     return json(request, { error: "upstream" }, 502);
+  }
+}
+
+// ---------- Xác minh Cloudflare Turnstile (màn đăng nhập) ----------
+
+const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+async function handleTurnstile(request: Request, env: Env): Promise<Response> {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(request) });
+  if (request.method !== "POST") return json(request, { error: "method" }, 405);
+  if (!env.TURNSTILE_SECRET_KEY) return json(request, { success: false, error: "not_configured" }, 503);
+
+  let token = "";
+  try {
+    const body = (await request.json()) as { token?: unknown };
+    token = typeof body.token === "string" ? body.token : "";
+  } catch {
+    /* body không hợp lệ */
+  }
+  // Token Turnstile tối đa 2048 ký tự
+  if (!token || token.length > 2048) return json(request, { success: false, error: "bad_request" }, 400);
+
+  const form = new FormData();
+  form.append("secret", env.TURNSTILE_SECRET_KEY);
+  form.append("response", token);
+  const ip = request.headers.get("CF-Connecting-IP");
+  if (ip) form.append("remoteip", ip);
+
+  try {
+    const res = await fetch(SITEVERIFY_URL, { method: "POST", body: form });
+    const result = (await res.json()) as { success?: boolean; "error-codes"?: string[] };
+    if (!result.success) return json(request, { success: false, error: "failed", codes: result["error-codes"] ?? [] }, 403);
+    return json(request, { success: true });
+  } catch {
+    return json(request, { success: false, error: "upstream" }, 502);
   }
 }

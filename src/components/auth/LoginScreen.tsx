@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import { Eye, EyeOff, GraduationCap, Loader2, Lock, LogIn, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { firebaseAuth } from "@/lib/firebase";
+import { TURNSTILE_SITE_KEY, verifyTurnstileToken } from "@/lib/turnstile";
+import TurnstileWidget, { type TurnstileHandle } from "./TurnstileWidget";
 
 function describeError(error: unknown): string {
   const code = error instanceof FirebaseError ? error.code : "";
@@ -27,6 +29,9 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileHandle>(null);
+  const needCaptcha = !!TURNSTILE_SITE_KEY;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -34,9 +39,22 @@ export default function LoginScreen() {
       setError("Vui lòng nhập đủ email và mật khẩu.");
       return;
     }
+    if (needCaptcha && !captchaToken) {
+      setError("Vui lòng hoàn tất bước xác minh bên dưới trước khi đăng nhập.");
+      return;
+    }
     setError("");
     setSubmitting(true);
     try {
+      if (needCaptcha) {
+        const ok = await verifyTurnstileToken(captchaToken!);
+        if (!ok) {
+          const message = "Xác minh không thành công. Vui lòng xác minh lại rồi đăng nhập.";
+          setError(message);
+          toast.error("Đăng nhập không thành công", { description: message });
+          return;
+        }
+      }
       await signInWithEmailAndPassword(firebaseAuth(), email.trim(), password);
       toast.success("Đăng nhập thành công", { description: "Chúc bạn ôn tập hiệu quả!" });
     } catch (err) {
@@ -44,6 +62,8 @@ export default function LoginScreen() {
       setError(message);
       toast.error("Đăng nhập không thành công", { description: message });
     } finally {
+      // Token Turnstile chỉ dùng một lần, lần đăng nhập sau phải xác minh lại
+      if (needCaptcha) turnstileRef.current?.reset();
       setSubmitting(false);
     }
   }
@@ -94,6 +114,8 @@ export default function LoginScreen() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </label>
+
+          {needCaptcha && <TurnstileWidget ref={turnstileRef} onToken={setCaptchaToken} />}
 
           {error && <p className="text-sm text-danger">{error}</p>}
 

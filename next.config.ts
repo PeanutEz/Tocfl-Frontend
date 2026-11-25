@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   basePath,
   trailingSlash: true,
   images: { unoptimized: true },
+  env: {
+    // Site key Turnstile là thông tin công khai. Chấp nhận cả tên TURNSTILE_SITE_KEY (không tiền tố) để nhúng vào bundle.
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || process.env.TURNSTILE_SITE_KEY || "",
+  },
 };
 
 export default nextConfig;
