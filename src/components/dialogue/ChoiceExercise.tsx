@@ -12,7 +12,7 @@ export type ExerciseItem = {
 const VARIANTS = {
   cloze: { box: "border-2 border-gold bg-[#fffaf0]", title: "text-[#d35400]", divider: "border-dashed border-gold" },
   quiz: { box: "border-2 border-dashed border-[#3498db] bg-[#f0f7ff]", title: "text-link", divider: "border-solid border-[#d6eaf8]" },
-  reading: { box: "border-2 border-success bg-[#fdfefe]", title: "text-success", divider: "border-dashed border-[#a9dfbf]" },
+  reading: { box: "border-2 border-success bg-soft", title: "text-success", divider: "border-dashed border-[#a9dfbf]" },
 } as const;
 
 type Props = {
@@ -48,7 +48,7 @@ export default function ChoiceExercise({ variant, icon: Icon, title, intro, item
             <div className={chips ? "mt-4 flex flex-wrap gap-3" : "mt-3 grid gap-2"}>
               {item.options.map((opt, oi) => {
                 const selected = choice === oi;
-                const state = selected ? (isRight ? "border-success bg-[#d5f5e3]" : "border-danger bg-[#fadbd8]") : "border-[#ccc] bg-white hover:border-[#95a5a6]";
+                const state = selected ? (isRight ? "border-success bg-[#d5f5e3]" : "border-danger bg-[#fadbd8]") : "border-line-strong bg-surface hover:border-line-strong";
                 return (
                   <button
                     key={oi}
@@ -63,7 +63,7 @@ export default function ChoiceExercise({ variant, icon: Icon, title, intro, item
                         <strong className="text-[19px] text-ink">{opt.zh}</strong>
                         {opt.vn && (
                           <>
-                            <ArrowRight size={16} className="text-[#bdc3c7]" />
+                            <ArrowRight size={16} className="text-faint" />
                             <span className="text-base font-medium text-success">{opt.vn}</span>
                           </>
                         )}

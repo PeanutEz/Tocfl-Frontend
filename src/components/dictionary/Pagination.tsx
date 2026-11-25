@@ -38,7 +38,7 @@ export default function Pagination({ page, totalPages, onChange, pending = null 
   const active = pending ?? page;
   const base =
     "inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-md border border-accent px-2 text-[15px] font-bold transition enabled:cursor-pointer disabled:cursor-not-allowed sm:h-10 sm:min-w-10 sm:px-3 sm:text-base";
-  const idle = "bg-white text-accent enabled:hover:bg-[#ffe6eb] disabled:opacity-50";
+  const idle = "bg-surface text-accent enabled:hover:bg-[#ffe6eb] disabled:opacity-50";
 
   const renderNumbers = (siblings: number) =>
     pageItems(active, totalPages, siblings).map((item, i) =>

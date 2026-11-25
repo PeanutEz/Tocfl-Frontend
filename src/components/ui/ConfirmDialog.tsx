@@ -48,7 +48,7 @@ export default function ConfirmDialog({ open, title, description, confirmLabel, 
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descId}
-        className="slide-down relative w-full max-w-md rounded-lg bg-white p-4 shadow-[0_20px_50px_rgba(0,0,0,0.25)] sm:p-5"
+        className="slide-down relative w-full max-w-md rounded-lg bg-surface p-4 shadow-[0_20px_50px_rgba(0,0,0,0.25)] sm:p-5"
       >
         <div className="flex gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold">
@@ -58,7 +58,7 @@ export default function ConfirmDialog({ open, title, description, confirmLabel, 
             <h2 id={titleId} className="text-lg font-bold text-ink">
               {title}
             </h2>
-            <div id={descId} className="mt-1 text-[15px] leading-relaxed text-[#555]">
+            <div id={descId} className="mt-1 text-[15px] leading-relaxed text-subtle">
               {description}
             </div>
           </div>
@@ -68,7 +68,7 @@ export default function ConfirmDialog({ open, title, description, confirmLabel, 
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="cursor-pointer rounded-md border border-[#ccc] bg-white px-4 py-2 text-[15px] font-semibold text-ink transition hover:bg-page"
+            className="cursor-pointer rounded-md border border-line-strong bg-surface px-4 py-2 text-[15px] font-semibold text-ink transition hover:bg-page"
           >
             {cancelLabel}
           </button>

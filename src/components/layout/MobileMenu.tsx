@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ChevronRight, LogOut, UserRound, X, type LucideIcon } from "lucide-react";
+import { ChevronRight, LogOut, Settings, UserRound, X, type LucideIcon } from "lucide-react";
+import ThemeSwitch from "@/components/ui/ThemeSwitch";
 
 type Props = {
   open: boolean;
@@ -12,10 +13,11 @@ type Props = {
   email: string;
   signingOut: boolean;
   onLogout: () => void;
+  onOpenSettings: () => void;
 };
 
 /** Menu trượt từ trái cho màn hình nhỏ: chuyển tab, xem tài khoản, đăng xuất. */
-export default function MobileMenu({ open, onClose, tabs, current, onSelect, email, signingOut, onLogout }: Props) {
+export default function MobileMenu({ open, onClose, tabs, current, onSelect, email, signingOut, onLogout, onOpenSettings }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -45,7 +47,7 @@ export default function MobileMenu({ open, onClose, tabs, current, onSelect, ema
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
-        className={`absolute inset-y-0 left-0 flex w-[82%] max-w-[320px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`absolute inset-y-0 left-0 flex w-[82%] max-w-[320px] flex-col bg-surface shadow-2xl transition-transform duration-300 ease-out ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -85,14 +87,18 @@ export default function MobileMenu({ open, onClose, tabs, current, onSelect, ema
                   <Icon size={18} />
                 </span>
                 <span className="flex-1">{label}</span>
-                <ChevronRight size={18} className={active ? "text-brand" : "text-[#ccc]"} />
+                <ChevronRight size={18} className={active ? "text-brand" : "text-faint"} />
               </button>
             );
           })}
         </nav>
 
-        <div className="border-t border-[#eee] p-4">
-          <div className="mb-3 flex items-center gap-3 text-sm text-[#555]">
+        <div className="border-t border-line px-1 py-1">
+          <ThemeSwitch />
+        </div>
+
+        <div className="border-t border-line p-4">
+          <div className="mb-3 flex items-center gap-3 text-sm text-subtle">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-page text-muted">
               <UserRound size={18} />
             </span>
@@ -102,9 +108,17 @@ export default function MobileMenu({ open, onClose, tabs, current, onSelect, ema
           </div>
           <button
             type="button"
+            onClick={onOpenSettings}
+            className="mb-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-line py-2.5 text-base font-semibold text-ink transition hover:bg-contrast/5"
+          >
+            <Settings size={18} />
+            Cài đặt
+          </button>
+          <button
+            type="button"
             onClick={onLogout}
             disabled={signingOut}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-[#ddd] py-2.5 text-base font-semibold text-[#555] transition hover:border-danger hover:text-danger disabled:opacity-60"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-line py-2.5 text-base font-semibold text-subtle transition hover:border-danger hover:text-danger disabled:opacity-60"
           >
             <LogOut size={18} />
             {signingOut ? "Đang đăng xuất…" : "Đăng xuất"}

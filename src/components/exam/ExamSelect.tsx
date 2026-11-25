@@ -81,7 +81,7 @@ export default function ExamSelect({ groups, value, onChange }: Props) {
         aria-expanded={open}
         aria-controls={listId}
         aria-label={`Chọn đề thi, đang chọn ${currentGroup?.band ?? ""} ${current?.name ?? ""}`}
-        className={`flex w-full cursor-pointer items-center gap-3 rounded-md border bg-white px-3 py-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:border-exam ${
+        className={`flex w-full cursor-pointer items-center gap-3 rounded-md border bg-surface px-3 py-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:border-exam ${
           open ? "border-exam ring-2 ring-exam/15" : "border-sand"
         }`}
       >
@@ -104,7 +104,7 @@ export default function ExamSelect({ groups, value, onChange }: Props) {
           aria-label="Danh sách đề thi"
           aria-activedescendant={optionId(active)}
           onKeyDown={onListKey}
-          className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-80 overflow-y-auto rounded-lg border border-sand-light bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.16)] outline-none"
+          className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-80 overflow-y-auto rounded-lg border border-sand-light bg-surface p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.16)] outline-none"
         >
           {groups.map((g) => (
             <li key={g.band} role="presentation">

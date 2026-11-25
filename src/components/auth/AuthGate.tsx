@@ -70,7 +70,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!isFirebaseConfigured) {
     return (
-      <div className="mx-auto mt-24 max-w-xl rounded-lg bg-white p-8 text-base shadow">
+      <div className="mx-auto mt-24 max-w-xl rounded-lg bg-surface p-8 text-base shadow">
         <div className="mb-3 flex items-center gap-2 text-lg font-semibold text-danger">
           <TriangleAlert size={22} /> Thiếu cấu hình Firebase
         </div>

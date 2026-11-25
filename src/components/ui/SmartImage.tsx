@@ -26,10 +26,10 @@ export default function SmartImage({ src, alt, className = "", imgClassName = ""
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {status === "loading" && (
-        <div aria-hidden className="absolute inset-0 animate-pulse bg-[#e9ecef]" />
+        <div aria-hidden className="absolute inset-0 animate-pulse bg-soft-strong" />
       )}
       {status === "error" ? (
-        <div className={`flex flex-col items-center justify-center gap-1.5 bg-[#f5f5f5] p-4 text-xs text-muted ${placeholderClassName}`}>
+        <div className={`flex flex-col items-center justify-center gap-1.5 bg-soft p-4 text-xs text-muted ${placeholderClassName}`}>
           <ImageOff size={22} />
           Không tải được hình
         </div>

@@ -99,9 +99,9 @@ export default function DialogueTab({ state, focus }: Props) {
 
   return (
     <section>
-      <div className="mb-6 rounded-lg bg-white p-3.5 text-base sm:p-5 shadow-[0_5px_15px_rgba(0,0,0,0.05)] ring-1 ring-[#eee]">
-        <div className="mb-4 flex flex-wrap items-center gap-2.5 border-b border-dashed border-[#ddd] pb-4">
-          <span className="mr-2 font-bold text-[#555]">Cấp độ</span>
+      <div className="mb-6 rounded-lg bg-surface p-3.5 text-base sm:p-5 shadow-[0_5px_15px_rgba(0,0,0,0.05)] ring-1 ring-line">
+        <div className="mb-4 flex flex-wrap items-center gap-2.5 border-b border-dashed border-line pb-4">
+          <span className="mr-2 font-bold text-subtle">Cấp độ</span>
           {levels.map((lvl) => (
             <button
               key={lvl}
@@ -111,7 +111,7 @@ export default function DialogueTab({ state, focus }: Props) {
                 setLesson(null);
               }}
               className={`${pill} rounded-md px-4 py-1.5 ${
-                lvl === currentLevel ? "border-accent bg-accent text-white" : "border-accent bg-white text-accent hover:bg-accent/5"
+                lvl === currentLevel ? "border-accent bg-accent text-white" : "border-accent bg-surface text-accent hover:bg-accent/5"
               }`}
             >
               {lvl}
@@ -119,7 +119,7 @@ export default function DialogueTab({ state, focus }: Props) {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="mr-2 font-bold text-[#555]">Bài học</span>
+          <span className="mr-2 font-bold text-subtle">Bài học</span>
           {lessons.length === 0 && <EmptyNote>Cấp độ này chưa có bài học.</EmptyNote>}
           {lessons.map((lsn) => (
             <button
@@ -127,7 +127,7 @@ export default function DialogueTab({ state, focus }: Props) {
               type="button"
               onClick={() => setLesson(lsn)}
               className={`cursor-pointer rounded-md border px-3 py-1 font-medium transition ${
-                lsn === currentLesson ? "border-link bg-link text-white" : "border-link bg-white text-link hover:bg-link/5"
+                lsn === currentLesson ? "border-link bg-link text-white" : "border-link bg-surface text-link hover:bg-link/5"
               }`}
             >
               {lsn}

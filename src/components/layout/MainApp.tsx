@@ -3,15 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "firebase/auth";
 import { useUser } from "@/components/auth/AuthGate";
-import { ArrowUp, BookOpen, ClipboardCheck, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
+import { ArrowUp, BookOpen, ClipboardCheck, Languages, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { firebaseAuth } from "@/lib/firebase";
 import { trackUserAction } from "@/lib/tracking";
-import { loadDialogues, loadDictionary } from "@/lib/data";
+import { consumeCacheClearedFlag, loadDialogues, loadDictionary } from "@/lib/data";
 import { useAsync } from "@/hooks/use-async";
 import { useScrollY } from "@/hooks/use-scroll-y";
 import { glossesOf, searchWords, suggestWords, type SearchDirection } from "@/lib/text";
 import { levelOf, searchDialogues } from "@/lib/dialogues";
+import { buildRadicalIndex } from "@/lib/radicals";
 import { pauseAllAudio, stopSpeaking } from "@/lib/speech";
 import { getUnsavedAnswers } from "@/lib/unsaved-work";
 import type { Word } from "@/types";
@@ -19,16 +20,19 @@ import SearchBox, { type Suggestion } from "@/components/ui/SearchBox";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import MobileMenu from "./MobileMenu";
 import AccountMenu from "./AccountMenu";
+import SettingsDialog from "./SettingsDialog";
 import DictionaryTab from "@/components/dictionary/DictionaryTab";
 import DialogueTab, { type DialogueFocus } from "@/components/dialogue/DialogueTab";
 import ExamTab from "@/components/exam/ExamTab";
+import TranslateTab from "@/components/translate/TranslateTab";
 
-type TabId = "dict" | "speak" | "exam";
+type TabId = "dict" | "speak" | "exam" | "translate";
 
 const TABS: { id: TabId; label: string; icon: LucideIcon; trackDetail: string }[] = [
   { id: "dict", label: "Từ điển", icon: BookOpen, trackDetail: "Chuyển sang tab Từ Điển" },
   { id: "speak", label: "Hội thoại & đoạn văn", icon: MessagesSquare, trackDetail: "Chuyển sang tab Hội Thoại" },
   { id: "exam", label: "Luyện thi TOCFL", icon: ClipboardCheck, trackDetail: "Chuyển sang tab Luyện Thi TOCFL" },
+  { id: "translate", label: "Dịch", icon: Languages, trackDetail: "Chuyển sang tab Dịch" },
 ];
 
 const INACTIVITY_MS = 30 * 60 * 1000;
@@ -68,12 +72,18 @@ export default function MainApp() {
   const [tab, setTab] = useState<TabId>("dict");
   const [signingOut, setSigningOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   // Số câu đã chọn mà chưa nộp khi bấm đăng xuất (null = không hỏi)
   const [logoutUnsaved, setLogoutUnsaved] = useState<number | null>(null);
   const scrollY = useScrollY();
   const scrolled = scrollY > 120; // phần tiêu đề đã cuộn khuất, thanh tìm kiếm đang dính
   const showToTop = scrollY > 500;
   useSessionTracking();
+
+  // Vừa xoá bộ nhớ đệm và tải lại trang: báo cho học viên biết đã xong
+  useEffect(() => {
+    if (consumeCacheClearedFlag()) toast.success("Đã xoá bộ nhớ đệm", { description: "Dữ liệu bài học đã được tải lại bản mới nhất." });
+  }, []);
 
   // --- Từ điển ---
   const words = useAsync(loadDictionary, []);
@@ -88,7 +98,7 @@ export default function MainApp() {
   // Khôi phục tab / từ khoá / trang từ URL khi tải lại trang (vd: ?q=ban&page=3)
   useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get("tab");
-    if (tabParam === "speak" || tabParam === "exam") setTab(tabParam);
+    if (tabParam === "speak" || tabParam === "exam" || tabParam === "translate") setTab(tabParam);
   }, []);
 
   useEffect(() => {
@@ -181,7 +191,7 @@ export default function MainApp() {
       key: `${item.word}-${i}`,
       primary: (
         <>
-          <strong>{item.word}</strong> <span className="text-[#666]">({item.pinyin})</span>
+          <strong>{item.word}</strong> <span className="text-subtle">({item.pinyin})</span>
         </>
       ),
       // Tìm bằng tiếng Việt thì hiện nghĩa để người dùng thấy vì sao từ này khớp
@@ -207,6 +217,15 @@ export default function MainApp() {
         description: dictDir === "zh-vi" ? "Đang tra Trung → Việt. Gõ tiếng Việt thì đổi sang Việt → Trung." : "Đang tra Việt → Trung. Gõ chữ Hán hoặc pinyin thì đổi sang Trung → Việt.",
       });
     }
+  }
+
+  // Bộ thủ chỉ gồm các chữ có trong từ điển, để chọn chữ nào cũng tra ra kết quả
+  const radicalIndex = useMemo(() => buildRadicalIndex((words.data ?? []).map((w) => w.word)), [words.data]);
+
+  // Chữ chọn từ bảng vẽ tay / bộ thủ: nối vào từ khoá, chuyển sang chiều Trung → Việt
+  function insertDictChar(ch: string) {
+    if (dictDir !== "zh-vi") toggleDictDir();
+    setDictQuery((q) => (dictDir === "zh-vi" ? q : "") + ch);
   }
 
   // Đổi chiều tra; đang có kết quả tìm theo từ khoá thì tìm lại theo chiều mới
@@ -249,13 +268,18 @@ export default function MainApp() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] rounded-lg bg-white p-2 shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:w-[96%] sm:p-5">
+    <div className="mx-auto w-full max-w-[1400px] rounded-lg bg-surface p-2 shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:w-[96%] sm:p-5">
       <header className="rounded-t-lg bg-brand px-4 pt-3 text-center text-white sm:px-5 sm:pt-4">
         <div className="mb-1 flex items-center justify-center gap-3 sm:justify-between">
           <span className="rounded bg-white/15 px-2.5 py-1 text-xs font-semibold tracking-wide sm:text-sm">國立臺南大學 NUTN</span>
           {/* Màn hình nhỏ dùng menu hamburger nên chỉ hiện từ sm trở lên */}
           <div className="hidden sm:block">
-            <AccountMenu email={user.email ?? ""} signingOut={signingOut} onLogout={requestLogout} />
+            <AccountMenu
+              email={user.email ?? ""}
+              signingOut={signingOut}
+              onLogout={requestLogout}
+              onOpenSettings={() => setSettingsOpen(true)}
+            />
           </div>
         </div>
 
@@ -293,11 +317,11 @@ export default function MainApp() {
                 }}
                 suggestions={dictSuggestions}
                 direction={{
-                  from: dictDir === "zh-vi" ? "Trung" : "Việt",
-                  to: dictDir === "zh-vi" ? "Việt" : "Trung",
+                  active: dictDir === "zh-vi" ? "zh" : "vi",
                   label: dictDir === "zh-vi" ? "Đang tra Trung sang Việt" : "Đang tra Việt sang Trung",
                   onToggle: toggleDictDir,
                 }}
+                charTools={{ radicals: radicalIndex, onInsert: insertDictChar }}
                 placeholder={dictDir === "zh-vi" ? "Gõ chữ Hán hoặc pinyin: 你好, nihao…" : "Gõ tiếng Việt: xin chào, bạn bè…"}
               />
             )}
@@ -315,11 +339,16 @@ export default function MainApp() {
                 <ClipboardCheck size={20} /> Luyện thi TOCFL
               </p>
             )}
+            {tab === "translate" && (
+              <p className="flex items-center gap-2 text-left text-lg font-bold sm:hidden">
+                <Languages size={20} /> Dịch Trung - Việt
+              </p>
+            )}
           </div>
         </div>
 
         <nav
-          className={`hidden flex-wrap items-center justify-center gap-2 sm:flex ${tab === "exam" ? "" : "mt-2"}`}
+          className={`hidden flex-wrap items-center justify-center gap-2 sm:flex ${tab === "exam" || tab === "translate" ? "" : "mt-2"}`}
           aria-label="Chức năng"
         >
           {TABS.map(({ id, label, icon: Icon }) => (
@@ -329,7 +358,7 @@ export default function MainApp() {
               onClick={() => switchTab(id)}
               aria-current={tab === id ? "page" : undefined}
               className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-3.5 py-1.5 text-[15px] font-bold transition ${
-                tab === id ? "bg-white text-brand" : "bg-white/20 text-white hover:bg-white/30"
+                tab === id ? "bg-surface text-brand" : "bg-white/20 text-white hover:bg-white/30"
               }`}
             >
               <Icon size={17} />
@@ -352,7 +381,13 @@ export default function MainApp() {
         email={user.email ?? ""}
         signingOut={signingOut}
         onLogout={requestLogout}
+        onOpenSettings={() => {
+          setMenuOpen(false);
+          setSettingsOpen(true);
+        }}
       />
+
+      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <main className="mt-4 sm:mt-5">
         <div hidden={tab !== "dict"}>
@@ -368,6 +403,9 @@ export default function MainApp() {
         </div>
         <div hidden={tab !== "exam"}>
           <ExamTab />
+        </div>
+        <div hidden={tab !== "translate"}>
+          <TranslateTab />
         </div>
       </main>
 

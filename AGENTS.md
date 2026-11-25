@@ -9,6 +9,7 @@ Hướng dẫn cho AI coding agent (Claude Code, Codex, Cursor…) làm việc t
 1. **Từ điển** TOCFL A1 + A2: tra theo chữ Hán hoặc pinyin không dấu, phát âm, thứ tự nét, mẫu luyện viết in ra PDF.
 2. **Hội thoại & đoạn văn**: đọc theo giọng nam/nữ, chỉnh tốc độ, bài tập điền từ, trắc nghiệm, đọc hiểu.
 3. **Luyện thi TOCFL**: đề thi thử Band A gồm phần Nghe (có audio) và phần Đọc, chấm điểm và giải thích.
+4. **Dịch**: dịch Trung (Phồn/Giản thể) ↔ Việt bằng Azure Translator qua Worker `/api/translate`, tối đa 100 ký tự mỗi lần.
 
 Học viên đăng nhập bằng Firebase Auth. Hành vi học tập được ghi vào Firestore để phục vụ **luận văn**.
 
@@ -58,6 +59,7 @@ src/
     dictionary/        DictionaryTab, WordCard, WordCardSkeleton, StrokeOrder, Pagination
     dialogue/          DialogueTab, DialogueCard, ChoiceExercise
     exam/              ExamTab, ReadingTest, ListeningTest, shared (options/feedback/score)
+    translate/         TranslateTab (giao diện kiểu Google Dịch)
   hooks/
     use-async.ts       useAsync(): chạy Promise, trả { data, error }
     use-scroll-y.ts    useScrollY(): vị trí cuộn
@@ -69,6 +71,9 @@ src/
     text.ts            bỏ dấu, tìm kiếm từ vựng (Hán / pinyin / tiếng Việt), tách chữ Hán
     dialogues.ts       cấp độ / bài học / tìm hội thoại
     practice-sheet.ts  cửa sổ in mẫu luyện viết
+    translate.ts       gọi /api/translate kèm Firebase ID token
+worker/
+  index.ts             Cloudflare Worker: phục vụ out/, xử lý /api/translate (giữ key Azure)
   types/
     index.ts           kiểu dữ liệu của các file JSON
 public/
@@ -130,12 +135,14 @@ Giao diện phải trông như sản phẩm do người làm, phong cách doanh 
 
 ### Cloudflare Workers
 
-`wrangler.jsonc` cấu hình Worker chỉ phục vụ file tĩnh từ `./out`, không có code server. Thiếu file này thì `wrangler deploy` sẽ tự cấu hình Next.js theo kiểu có server (OpenNext) và báo lỗi.
+`wrangler.jsonc` cấu hình Worker phục vụ file tĩnh từ `./out`; riêng `/api/translate` chạy `worker/index.ts` (xác thực Firebase ID token rồi gọi Azure Translator). Key Azure **không** được có tiền tố `NEXT_PUBLIC_`. Thiếu file này thì `wrangler deploy` sẽ tự cấu hình Next.js theo kiểu có server (OpenNext) và báo lỗi.
 
 - **Build command:** `npm run build`. **Deploy command:** `npx wrangler deploy`.
 - Trường `name` trong `wrangler.jsonc` phải trùng tên Worker trên Dashboard.
 - Biến `NEXT_PUBLIC_FIREBASE_*` đặt ở **Settings → Build → Variables and secrets** (biến lúc build), không phải biến runtime của Worker.
 - Không đặt `NEXT_PUBLIC_BASE_PATH`, vì site chạy ở domain gốc.
+- `AZURE_TRANSLATOR_KEY`, `AZURE_TRANSLATOR_REGION`, `AZURE_TRANSLATOR_ENDPOINT`, `FIREBASE_PROJECT_ID` đặt ở **Settings → Variables and secrets** của Worker (biến runtime, loại Secret). Không đặt `NEXT_PUBLIC_TRANSLATE_API` khi build production.
+- Chạy thử tab Dịch ở local: `npm run dev` + `npm run dev:worker` (Wrangler đọc `.env.local`; cần `npm run build` trước để có `out/`), với `NEXT_PUBLIC_TRANSLATE_API=http://127.0.0.1:8787/api/translate` trong `.env.local`.
 - Thêm domain `*.workers.dev` (hoặc domain riêng) vào Firebase Authorized domains.
 
 Bản HTML/JS tĩnh trước khi chuyển sang Next.js được giữ ở tag git `backup/static-site-2026-11-24`.

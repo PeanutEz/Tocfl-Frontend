@@ -59,16 +59,16 @@ export default function DialogueCard({ id, dialogue: g, flash, isPlaying, speed,
   return (
     <article
       id={id}
-      className={`mb-8 scroll-mt-28 rounded-lg bg-white p-3.5 text-left sm:mb-10 sm:scroll-mt-48 shadow-[0_10px_30px_rgba(0,0,0,0.05)] ring-1 ring-[#f0f0f0] sm:p-[30px] ${flash ? "flash" : ""}`}
+      className={`mb-8 scroll-mt-28 rounded-lg bg-surface p-3.5 text-left sm:mb-10 sm:scroll-mt-48 shadow-[0_10px_30px_rgba(0,0,0,0.05)] ring-1 ring-line sm:p-[30px] ${flash ? "flash" : ""}`}
     >
       <div className="mb-2.5 flex justify-end gap-2">
         {g.level && <span className="rounded bg-danger px-2.5 py-1 text-[13px] font-bold text-white">{g.level}</span>}
         <span className="rounded bg-link px-2.5 py-1 text-[13px] font-bold text-white">{g.lesson}</span>
       </div>
 
-      <h2 className="mb-5 border-b-2 border-[#eee] pb-2.5 text-[22px] font-bold leading-snug text-brand sm:text-[28px]">{g.title}</h2>
+      <h2 className="mb-5 border-b-2 border-line pb-2.5 text-[22px] font-bold leading-snug text-brand sm:text-[28px]">{g.title}</h2>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-[#e0e0e0] bg-[#f8f9fa] p-3 text-base sm:gap-4 sm:p-4">
+      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-soft p-3 text-base sm:gap-4 sm:p-4">
         <button
           type="button"
           onClick={onPlayAll}
@@ -80,8 +80,8 @@ export default function DialogueCard({ id, dialogue: g, flash, isPlaying, speed,
           {isPlaying ? "Dừng đọc" : "Nghe cả bài"}
         </button>
 
-        <div className="flex w-full flex-wrap items-center gap-2 border-t border-[#ddd] pt-3 sm:w-auto sm:border-l-2 sm:border-t-0 sm:pl-4 sm:pt-0">
-          <span className="inline-flex items-center gap-1.5 font-bold text-[#555]">
+        <div className="flex w-full flex-wrap items-center gap-2 border-t border-line pt-3 sm:w-auto sm:border-l-2 sm:border-t-0 sm:pl-4 sm:pt-0">
+          <span className="inline-flex items-center gap-1.5 font-bold text-subtle">
             <Gauge size={18} /> Tốc độ
           </span>
           {SPEEDS.map((s) => (
@@ -91,7 +91,7 @@ export default function DialogueCard({ id, dialogue: g, flash, isPlaying, speed,
               onClick={() => onSpeedChange(s.rate)}
               aria-pressed={speed === s.rate}
               className={`cursor-pointer rounded-md border px-3 py-1 text-sm transition ${
-                speed === s.rate ? "border-ink bg-ink text-white" : "border-[#bdc3c7] bg-white hover:border-ink"
+                speed === s.rate ? "border-ink bg-ink text-white" : "border-line-strong bg-surface hover:border-ink"
               }`}
             >
               {s.label}
@@ -116,7 +116,7 @@ export default function DialogueCard({ id, dialogue: g, flash, isPlaying, speed,
               >
                 {narrator ? <BookOpenText size={18} /> : line.sp.charAt(0)}
               </div>
-              <div className="min-w-0 grow rounded-lg border-l-4 bg-[#f8f9fa] px-3 py-2.5 sm:px-5 sm:py-3" style={{ borderLeftColor: color }}>
+              <div className="min-w-0 grow rounded-lg border-l-4 bg-soft px-3 py-2.5 sm:px-5 sm:py-3" style={{ borderLeftColor: color }}>
                 <div className="text-[19px] font-bold sm:text-[22px]">
                   {narrator ? line.zh : `${line.sp}: ${line.zh}`}
                   <SpeakButton text={line.zh} onSpeak={() => onPlayLine(line.zh, line.gender)} className="ml-1" />

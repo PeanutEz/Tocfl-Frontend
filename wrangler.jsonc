@@ -1,11 +1,17 @@
-// Cấu hình Cloudflare Workers: site là static export (thư mục `out/` sau `npm run build`),
-// không có code chạy phía server. Có file này thì `wrangler deploy` không tự đoán cấu hình Next.js nữa.
+// Cấu hình Cloudflare Workers: site là static export (thư mục `out/` sau `npm run build`).
+// Worker `worker/index.ts` chỉ xử lý `/api/translate` (gọi Azure Translator, giữ key ở phía server);
+// mọi đường dẫn khác trả thẳng file tĩnh. Có file này thì `wrangler deploy` không tự đoán cấu hình Next.js nữa.
 {
   // Phải trùng tên Worker trên Cloudflare Dashboard
   "name": "tocfl",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./out",
-    "not_found_handling": "404-page"
-  }
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  // Giữ các biến đặt trên Dashboard khi `wrangler deploy`
+  "keep_vars": true
 }

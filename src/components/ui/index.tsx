@@ -86,5 +86,5 @@ export function ErrorBlock({ message }: { message: string }) {
 }
 
 export function EmptyNote({ children }: { children: React.ReactNode }) {
-  return <span className="text-base italic text-[#999]">{children}</span>;
+  return <span className="text-base italic text-faint">{children}</span>;
 }

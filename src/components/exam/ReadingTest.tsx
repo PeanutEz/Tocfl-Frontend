@@ -42,7 +42,7 @@ export default function ReadingTest({ sections }: { sections: ReadingSection[] }
   }
 
   if (sections.length === 0) {
-    return <p className="text-base italic text-[#666]">Phần đọc đang được cập nhật.</p>;
+    return <p className="text-base italic text-subtle">Phần đọc đang được cập nhật.</p>;
   }
 
   return (
@@ -57,7 +57,7 @@ export default function ReadingTest({ sections }: { sections: ReadingSection[] }
         {sections.map((section, si) => (
           <section key={si}>
             <h4 className="mt-6 border-b-2 border-sand pb-1 font-serif-tc text-xl font-bold">{section.part_name}</h4>
-            <Rich as="p" html={section.description_zh} className="mb-4 mt-2 text-sm leading-relaxed text-[#4a423a]" />
+            <Rich as="p" html={section.description_zh} className="mb-4 mt-2 text-sm leading-relaxed text-ink" />
 
             {section.questions.map((q) => {
               const key = `${si}-${q.id}`;
@@ -65,20 +65,20 @@ export default function ReadingTest({ sections }: { sections: ReadingSection[] }
                 <div
                   key={key}
                   id={questionDomId("reading", key)}
-                  className="mb-5 scroll-mt-24 rounded-md border border-[#ddd] bg-white p-3.5 shadow-[0_2px_4px_rgba(0,0,0,0.05)] sm:scroll-mt-32 sm:p-5"
+                  className="mb-5 scroll-mt-24 rounded-md border border-line bg-surface p-3.5 shadow-[0_2px_4px_rgba(0,0,0,0.05)] sm:scroll-mt-32 sm:p-5"
                 >
                   {q.passage_zh && (
                     <Rich
                       as="div"
                       html={q.passage_zh.replace(/\n/g, "<br>")}
-                      className="mb-4 border-l-4 border-sand bg-[#fdfaf6] p-4 font-serif-tc text-lg leading-[1.8] text-[#333]"
+                      className="mb-4 border-l-4 border-sand bg-cream p-4 font-serif-tc text-lg leading-[1.8] text-ink"
                     />
                   )}
                   {q.question_image && (
                     <SmartImage
                       src={asset(q.question_image)}
                       alt={`Hình câu ${q.id}`}
-                      className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-[#eee] shadow-[0_2px_5px_rgba(0,0,0,0.1)]"
+                      className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-line shadow-[0_2px_5px_rgba(0,0,0,0.1)]"
                       imgClassName="block h-auto w-full"
                       placeholderClassName="h-[230px]"
                     />
@@ -88,7 +88,7 @@ export default function ReadingTest({ sections }: { sections: ReadingSection[] }
                     html={q.question_zh}
                     className={`font-serif-tc text-lg font-bold ${q.question_vn ? "mb-1" : "mb-5"}`}
                   />
-                  {q.question_vn && <p className="mb-5 text-sm italic text-[#666]">{q.question_vn}</p>}
+                  {q.question_vn && <p className="mb-5 text-sm italic text-subtle">{q.question_vn}</p>}
 
                   <ExamOptions
                     name={`Câu ${q.id}`}

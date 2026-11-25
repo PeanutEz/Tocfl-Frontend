@@ -23,3 +23,6 @@ Thumbs.db
 .vscode/
 .idea/
 npm-debug.log*
+
+# Wrangler local state
+.wrangler/

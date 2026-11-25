@@ -74,9 +74,9 @@ export default function QuestionNav({ idPrefix, items, answers, submitted }: Pro
     if (submitted) {
       if (answer === it.correctAnswer) return "border-success bg-success text-white";
       if (answer) return "border-danger bg-danger text-white";
-      return "border-danger bg-white text-danger";
+      return "border-danger bg-surface text-danger";
     }
-    return answer ? "border-exam bg-exam text-white" : "border-sand bg-white text-slate-exam hover:border-exam";
+    return answer ? "border-exam bg-exam text-white" : "border-sand bg-surface text-slate-exam hover:border-exam";
   };
 
   const summary = (
@@ -96,7 +96,7 @@ export default function QuestionNav({ idPrefix, items, answers, submitted }: Pro
             <i className="h-3 w-3 rounded-sm bg-danger" /> Sai
           </span>
           <span className="inline-flex items-center gap-1">
-            <i className="h-3 w-3 rounded-sm border border-danger bg-white" /> Bỏ trống
+            <i className="h-3 w-3 rounded-sm border border-danger bg-surface" /> Bỏ trống
           </span>
         </>
       ) : (
@@ -105,7 +105,7 @@ export default function QuestionNav({ idPrefix, items, answers, submitted }: Pro
             <i className="h-3 w-3 rounded-sm bg-exam" /> Đã chọn
           </span>
           <span className="inline-flex items-center gap-1">
-            <i className="h-3 w-3 rounded-sm border border-sand bg-white" /> Chưa làm
+            <i className="h-3 w-3 rounded-sm border border-sand bg-surface" /> Chưa làm
           </span>
         </>
       )}

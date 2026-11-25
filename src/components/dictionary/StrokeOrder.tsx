@@ -100,7 +100,7 @@ export default function StrokeOrder({ chars, pinyin, hanViet }: Props) {
               writers.current[i]?.animateCharacter();
             }}
             title="Bấm để xem lại thứ tự nét"
-            className="h-[70px] w-[70px] cursor-pointer rounded-md border border-dashed border-[#bdc3c7] bg-white"
+            className="h-[70px] w-[70px] cursor-pointer rounded-md border border-dashed border-line-strong bg-surface"
           />
           <button
             type="button"
@@ -111,7 +111,7 @@ export default function StrokeOrder({ chars, pinyin, hanViet }: Props) {
                 });
               }
             }}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-danger bg-white px-3 py-1 text-xs font-medium text-danger transition hover:bg-danger hover:text-white"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-danger bg-surface px-3 py-1 text-xs font-medium text-danger transition hover:bg-danger hover:text-white"
           >
             <FileDown size={14} /> Mẫu luyện viết
           </button>

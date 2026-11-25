@@ -31,3 +31,42 @@ export const loadDictionary = () =>
 export const loadDialogues = () => loadJson<Dialogue[]>("dialogues.json");
 
 export const loadExam = (id: string) => loadJson<Exam>(`exams/${id}.json`);
+
+const CACHE_CLEARED_FLAG = "cache-cleared";
+
+/**
+ * Xoá bộ nhớ đệm dữ liệu bài học rồi tải lại trang:
+ * - bộ nhớ tạm trong trang (JSON đã tải), Cache Storage, sessionStorage;
+ * - tải lại các file JSON với `cache: "reload"` để bản trong bộ nhớ đệm HTTP của trình duyệt được thay bằng bản mới.
+ * Không đụng tới localStorage (lựa chọn giao diện) và IndexedDB (phiên đăng nhập Firebase).
+ */
+export async function clearAppCache(): Promise<void> {
+  const files = new Set(["dictionary-a1.json", "dictionary-a2.json", "dialogues.json", ...cache.keys()]);
+  cache.clear();
+
+  if (typeof caches !== "undefined") {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+  }
+
+  await Promise.allSettled([...files].map((file) => fetch(asset(`data/${file}`), { cache: "reload" })));
+
+  try {
+    sessionStorage.clear();
+    sessionStorage.setItem(CACHE_CLEARED_FLAG, "1");
+  } catch {
+    // sessionStorage bị chặn: bỏ qua thông báo sau khi tải lại
+  }
+  window.location.reload();
+}
+
+/** Trả true một lần duy nhất ngay sau khi trang được tải lại bởi clearAppCache(). */
+export function consumeCacheClearedFlag(): boolean {
+  try {
+    if (sessionStorage.getItem(CACHE_CLEARED_FLAG) !== "1") return false;
+    sessionStorage.removeItem(CACHE_CLEARED_FLAG);
+    return true;
+  } catch {
+    return false;
+  }
+}

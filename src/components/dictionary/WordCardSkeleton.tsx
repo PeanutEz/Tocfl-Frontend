@@ -1,11 +1,11 @@
 /** Khung xương mô phỏng bố cục WordCard trong lúc tải trang. */
-const Bar = ({ className }: { className: string }) => <div className={`rounded bg-[#e9ecef] ${className}`} />;
+const Bar = ({ className }: { className: string }) => <div className={`rounded bg-soft-strong ${className}`} />;
 
 export default function WordCardSkeleton() {
   return (
     <div
       aria-hidden
-      className="my-4 animate-pulse rounded-lg border border-[#e5e5e5] bg-white p-3.5 shadow-[0_5px_15px_rgba(0,0,0,0.04)] sm:p-[25px]"
+      className="my-4 animate-pulse rounded-lg border border-line bg-surface p-3.5 shadow-[0_5px_15px_rgba(0,0,0,0.04)] sm:p-[25px]"
     >
       <Bar className="h-6 w-20" />
       <Bar className="mt-4 h-14 w-48 sm:h-16" />
@@ -18,8 +18,8 @@ export default function WordCardSkeleton() {
       </div>
 
       <div className="mt-4 flex gap-4">
-        <div className="h-[70px] w-[70px] rounded-md border border-dashed border-[#dfe3e6]" />
-        <div className="h-[70px] w-[70px] rounded-md border border-dashed border-[#dfe3e6]" />
+        <div className="h-[70px] w-[70px] rounded-md border border-dashed border-line" />
+        <div className="h-[70px] w-[70px] rounded-md border border-dashed border-line" />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">

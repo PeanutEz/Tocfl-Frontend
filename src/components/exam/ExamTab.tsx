@@ -48,7 +48,7 @@ export default function ExamTab() {
 
   const skillBtn = (active: boolean) =>
     `inline-flex cursor-pointer items-center justify-center gap-2 rounded-md px-3 py-2.5 text-[15px] font-bold transition sm:px-6 sm:text-base ${
-      active ? "bg-exam text-white" : "border border-sand bg-paper text-[#333] hover:bg-[#f1e6c8]"
+      active ? "bg-exam text-white" : "border border-sand bg-paper text-ink hover:bg-[#f1e6c8]"
     }`;
 
   return (
@@ -66,7 +66,7 @@ export default function ExamTab() {
       {exam.data && (
         <>
           <h2 className="text-center font-serif-tc text-[21px] font-bold text-exam sm:text-[26px]">{exam.data.title}</h2>
-          <p className="mb-5 text-center text-base text-[#666]">{exam.data.description}</p>
+          <p className="mb-5 text-center text-base text-subtle">{exam.data.description}</p>
 
           <div className="mb-6 grid grid-cols-2 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
             <button

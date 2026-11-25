@@ -101,7 +101,7 @@ export default function WordNav({ items, page, totalPages }: Props) {
       {/* Desktop: cột dính bên phải */}
       <aside
         aria-label="Danh sách từ trong trang"
-        className={`sticky top-36 hidden shrink-0 self-start rounded-lg border border-[#e5e5e5] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.06)] transition-[width] lg:block ${
+        className={`sticky top-36 hidden shrink-0 self-start rounded-lg border border-line bg-surface shadow-[0_2px_6px_rgba(0,0,0,0.06)] transition-[width] lg:block ${
           expanded ? "w-64" : "w-11"
         }`}
       >
@@ -152,7 +152,7 @@ export default function WordNav({ items, page, totalPages }: Props) {
           <div
             role="dialog"
             aria-label="Danh sách từ trong trang"
-            className="fixed inset-x-3 bottom-4 z-50 flex max-h-[70vh] flex-col rounded-lg border border-[#e5e5e5] bg-white p-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.25)] sm:inset-x-auto sm:right-6 sm:w-80"
+            className="fixed inset-x-3 bottom-4 z-50 flex max-h-[70vh] flex-col rounded-lg border border-line bg-surface p-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.25)] sm:inset-x-auto sm:right-6 sm:w-80"
           >
             <div className="mb-2 flex items-start justify-between gap-2">
               {heading}

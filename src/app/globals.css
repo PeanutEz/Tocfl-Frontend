@@ -26,6 +26,107 @@
   --color-sand: #c8b997;
   --color-sand-light: #e6dfcc;
   --color-slate-exam: #3b4d61;
+
+  /* Màu trung tính theo theme (đổi giá trị trong .dark bên dưới) */
+  --color-surface: #ffffff; /* nền thẻ, ô nhập, menu */
+  --color-soft: #f8f9fa; /* nền nhạt bên trong thẻ */
+  --color-soft-strong: #e9ecef;
+  --color-line: #e5e5e5; /* viền mảnh */
+  --color-line-strong: #c4c9cc;
+  --color-subtle: #666666; /* chữ phụ đậm */
+  --color-faint: #a0a0a0; /* chữ mờ, placeholder */
+  --color-contrast: #000000; /* dùng với độ mờ: bg-contrast/5, border-contrast/10 */
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------- Chế độ tối ----------
+   Class `dark` gắn lên <html> bởi script trong layout.tsx (đọc localStorage "theme", mặc định là Sáng).
+   Màu mới thêm vào giao diện nên dùng token ở trên để tự đổi theo theme. */
+.dark {
+  color-scheme: dark;
+  --color-page: #0f1215;
+  --color-surface: #1a1f24;
+  --color-soft: #22282e;
+  --color-soft-strong: #2c333a;
+  --color-line: #2f363d;
+  --color-line-strong: #4a535c;
+  --color-ink: #e4e7ea;
+  --color-subtle: #b4bcc3;
+  --color-faint: #7c868f;
+  --color-muted: #919ca5;
+  --color-contrast: #ffffff;
+  --color-link: #5dade2;
+  --color-brand: #c0332c;
+  --color-brand-dark: #9c2722;
+  --color-accent: #e06a85;
+  --color-exam: #c94a43;
+  --color-danger: #ef6b5c;
+  --color-success: #3fbf73;
+  --color-paper: #29251d;
+  --color-cream: #201d18;
+  --color-sand: #6b604a;
+  --color-sand-light: #3a3428;
+  --color-slate-exam: #b9c7d6;
+}
+
+/* Các màu nhấn nhạt còn viết thẳng mã hex trong component: đổi sang nền trong suốt khi tối */
+.dark .bg-\[\#ffebee\],
+.dark .bg-\[\#fff8f8\],
+.dark .bg-\[\#fadbd8\] {
+  background-color: rgb(231 76 60 / 0.15);
+}
+.dark .bg-\[\#e8f5e9\],
+.dark .bg-\[\#e9f7ef\],
+.dark .bg-\[\#d5f5e3\],
+.dark .bg-\[\#f3faf8\],
+.dark .bg-\[\#e8f6f3\] {
+  background-color: rgb(46 204 113 / 0.14);
+}
+.dark .bg-\[\#f0f7ff\],
+.dark .bg-\[\#f5f9ff\],
+.dark .bg-\[\#e3f2fd\] {
+  background-color: rgb(52 152 219 / 0.15);
+}
+.dark .bg-\[\#fffbe6\],
+.dark .bg-\[\#fffaf0\] {
+  background-color: rgb(243 156 18 / 0.14);
+}
+.dark .enabled\:hover\:bg-\[\#ffe6eb\]:enabled:hover {
+  background-color: rgb(216 75 107 / 0.2);
+}
+.dark .hover\:bg-\[\#f1e6c8\]:hover {
+  background-color: rgb(200 185 151 / 0.18);
+}
+.dark .border-\[\#ffcccc\],
+.dark .border-\[\#f6dcdc\] {
+  border-color: rgb(231 76 60 / 0.35);
+}
+.dark .border-\[\#d6eaf8\] {
+  border-color: rgb(52 152 219 / 0.35);
+}
+.dark .border-\[\#d5ece6\],
+.dark .border-\[\#a9dfbf\] {
+  border-color: rgb(46 204 113 / 0.35);
+}
+.dark .border-\[\#d9ceb2\] {
+  border-color: var(--color-sand);
+}
+.dark .text-\[\#155724\] {
+  color: #6fdc9b;
+}
+.dark .text-\[\#856404\] {
+  color: #f5c451;
+}
+.dark .text-\[\#a33327\],
+.dark .text-\[\#c0392b\] {
+  color: #f08074;
+}
+.dark .text-\[\#d35400\] {
+  color: #f39c5a;
+}
+.dark .text-\[\#16a085\] {
+  color: #48c9b0;
 }
 
 html {

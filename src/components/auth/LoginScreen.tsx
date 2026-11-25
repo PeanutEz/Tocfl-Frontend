@@ -49,11 +49,11 @@ export default function LoginScreen() {
   }
 
   const inputWrap =
-    "flex items-center gap-3 rounded-md border border-[#ccc] bg-white px-3 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20";
+    "flex items-center gap-3 rounded-md border border-line-strong bg-surface px-3 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20";
 
   return (
     <div className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center">
-      <div className="slide-down rounded-lg bg-white px-6 py-9 text-center shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:px-8 sm:py-10">
+      <div className="slide-down rounded-lg bg-surface px-6 py-9 text-center shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:px-8 sm:py-10">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-accent/10 text-accent">
           <GraduationCap size={30} />
         </div>

@@ -74,11 +74,11 @@ export function ExamOptions({ name, options, layout, value, correctAnswer, submi
         const selected = value === opt.label;
         const isCorrect = opt.label === correctAnswer;
 
-        let tone = "border-[#ddd] bg-white hover:border-[#90caf9]";
+        let tone = "border-line bg-surface hover:border-[#90caf9]";
         if (submitted) {
           if (isCorrect) tone = "border-success bg-[#e8f5e9]";
           else if (selected) tone = "border-danger bg-[#ffebee]";
-          else tone = "border-[#ddd] bg-white opacity-60";
+          else tone = "border-line bg-surface opacity-60";
         } else if (selected) {
           tone = "border-[#2196F3] bg-[#e3f2fd]";
         } else if (value) {
@@ -109,12 +109,12 @@ export function ExamOptions({ name, options, layout, value, correctAnswer, submi
               {opt.label}
               {layout !== "label" && "."}
             </strong>
-            {opt.text && <span className={`font-serif-tc text-base text-[#333] ${layout === "image" ? "block" : ""}`}>{opt.text}</span>}
+            {opt.text && <span className={`font-serif-tc text-base text-ink ${layout === "image" ? "block" : ""}`}>{opt.text}</span>}
             {opt.image && (
               <SmartImage
                 src={asset(opt.image)}
                 alt={`Đáp án ${opt.label}`}
-                className="mx-auto aspect-square w-full max-w-[240px] rounded bg-white lg:max-w-[220px]"
+                className="mx-auto aspect-square w-full max-w-[240px] rounded bg-surface lg:max-w-[220px]"
                 imgClassName="h-full w-full object-contain"
                 placeholderClassName="h-full"
               />
@@ -140,7 +140,7 @@ export function Feedback({ answer, correctAnswer, explanation }: { answer?: stri
       <strong className="mb-1 flex items-center gap-2 text-base">
         <Icon size={18} /> {styles.text}
       </strong>
-      {explanation && <Rich as="div" html={explanation} className="text-[#333]" />}
+      {explanation && <Rich as="div" html={explanation} className="text-ink" />}
     </div>
   );
 }
@@ -152,7 +152,7 @@ export function SubmitBar({ submitted, onSubmit, onReset }: { submitted: boolean
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border-2 border-exam bg-white px-6 py-3 text-base sm:px-8 sm:text-lg font-bold text-exam shadow-sm transition hover:bg-exam hover:text-white"
+          className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border-2 border-exam bg-surface px-6 py-3 text-base sm:px-8 sm:text-lg font-bold text-exam shadow-sm transition hover:bg-exam hover:text-white"
         >
           <RotateCcw size={20} /> Làm lại từ đầu
         </button>
@@ -188,7 +188,7 @@ export function ScoreBoard({
           <div className="my-3 text-[42px] font-bold text-exam">
             {score.correct} / {score.total}
           </div>
-          <p className="text-base text-[#666]">Kéo xuống để xem lại từng câu: đáp án đúng tô xanh, câu chọn sai tô đỏ.</p>
+          <p className="text-base text-subtle">Kéo xuống để xem lại từng câu: đáp án đúng tô xanh, câu chọn sai tô đỏ.</p>
         </div>
       )}
     </div>

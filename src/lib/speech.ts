@@ -141,3 +141,22 @@ export function speakLine(text: string, gender: string, { rate, onEnd, onError, 
 
   window.speechSynthesis.speak(utterance);
 }
+
+/** Đọc một đoạn bất kỳ bằng Web Speech theo ngôn ngữ (dùng cho tab Dịch). */
+export function speakText(text: string, lang: "zh-TW" | "zh-CN" | "vi-VN"): void {
+  if (!isSpeechSupported()) return;
+  stopSpeaking();
+  const cleaned = text.trim();
+  if (!cleaned) return;
+
+  const utterance = new SpeechSynthesisUtterance(cleaned);
+  utterance.lang = lang;
+  utterance.rate = lang === "vi-VN" ? 1 : 0.9;
+  const voices = window.speechSynthesis.getVoices();
+  const [base, region] = lang.toLowerCase().split("-");
+  const voice =
+    voices.find((v) => v.lang.toLowerCase().replace("_", "-") === `${base}-${region}`) ??
+    voices.find((v) => v.lang.toLowerCase().startsWith(base));
+  if (voice) utterance.voice = voice;
+  window.speechSynthesis.speak(utterance);
+}

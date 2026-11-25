@@ -66,7 +66,7 @@ export default function ListeningTest({ questions }: { questions: ListeningQuest
   }
 
   if (questions.length === 0) {
-    return <p className="text-base italic text-[#666]">Phần nghe của đề này đang được cập nhật.</p>;
+    return <p className="text-base italic text-subtle">Phần nghe của đề này đang được cập nhật.</p>;
   }
 
   return (
@@ -90,14 +90,14 @@ export default function ListeningTest({ questions }: { questions: ListeningQuest
                   <h4 className="border-b-2 border-[#d9ceb2] pb-3 font-serif-tc text-[19px] font-bold text-slate-exam">
                     {intro.title}
                   </h4>
-                  <p className="mb-2 mt-4 text-base leading-[1.8] text-[#333]">{intro.zh}</p>
-                  <p className="text-base italic leading-relaxed text-[#666]">{intro.vn}</p>
+                  <p className="mb-2 mt-4 text-base leading-[1.8] text-ink">{intro.zh}</p>
+                  <p className="text-base italic leading-relaxed text-subtle">{intro.vn}</p>
                 </div>
               )}
 
               <div
                 id={questionDomId("listening", String(q.id))}
-                className="mb-5 scroll-mt-24 rounded-md border border-[#ddd] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.05)] sm:scroll-mt-32 sm:p-5"
+                className="mb-5 scroll-mt-24 rounded-md border border-line bg-surface p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.05)] sm:scroll-mt-32 sm:p-5"
               >
                 <h4 className="mb-3 text-xl font-bold text-[#a33327]">Câu {q.id}</h4>
                 <audio
@@ -116,7 +116,7 @@ export default function ListeningTest({ questions }: { questions: ListeningQuest
                   <SmartImage
                     src={asset(q.question_image)}
                     alt={`Hình câu ${q.id}`}
-                    className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-[#eee]"
+                    className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-line"
                     imgClassName="block h-auto w-full"
                     placeholderClassName="h-[230px]"
                   />
