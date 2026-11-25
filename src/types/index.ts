@@ -91,3 +91,11 @@ export type Exam = {
   reading: ReadingSection[];
   listening: ListeningQuestion[];
 };
+
+/** Một chủ đề trong public/data/topics.json: chỉ liệt kê `word` của các từ đã có trong từ điển. */
+export type Topic = {
+  id: string;
+  name: string;
+  icon: string; // tên icon lucide-react, ánh xạ trong components/topics/topic-icons.ts
+  words: string[];
+};

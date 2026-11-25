@@ -26,7 +26,8 @@ Học viên đăng nhập bằng Firebase Auth. Hành vi học tập được gh
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:3000 + Worker dịch ở :8787 (scripts/dev.mjs)
+npm run dev:next   # chỉ Next.js
 npm run typecheck  # tsc --noEmit
 npm run build      # xuất site tĩnh ra ./out
 ```
@@ -142,7 +143,7 @@ Giao diện phải trông như sản phẩm do người làm, phong cách doanh 
 - Biến `NEXT_PUBLIC_FIREBASE_*` đặt ở **Settings → Build → Variables and secrets** (biến lúc build), không phải biến runtime của Worker.
 - Không đặt `NEXT_PUBLIC_BASE_PATH`, vì site chạy ở domain gốc.
 - `AZURE_TRANSLATOR_KEY`, `AZURE_TRANSLATOR_REGION`, `AZURE_TRANSLATOR_ENDPOINT`, `FIREBASE_PROJECT_ID` đặt ở **Settings → Variables and secrets** của Worker (biến runtime, loại Secret). Không đặt `NEXT_PUBLIC_TRANSLATE_API` khi build production.
-- Chạy thử tab Dịch ở local: `npm run dev` + `npm run dev:worker` (Wrangler đọc `.env.local`; cần `npm run build` trước để có `out/`), với `NEXT_PUBLIC_TRANSLATE_API=http://127.0.0.1:8787/api/translate` trong `.env.local`.
+- Chạy thử tab Dịch ở local: `npm run dev` đã chạy kèm Worker (`scripts/dev.mjs`; Wrangler đọc `.env.local`). Khi dev, Worker dùng thư mục tĩnh rỗng `.wrangler/dev-assets` thay cho `out/`: `out/` có hàng nghìn file audio làm Wrangler treo lúc khởi động. Cần đặt `NEXT_PUBLIC_TRANSLATE_API=http://127.0.0.1:8787/api/translate` trong `.env.local`.
 - Thêm domain `*.workers.dev` (hoặc domain riêng) vào Firebase Authorized domains.
 
 Bản HTML/JS tĩnh trước khi chuyển sang Next.js được giữ ở tag git `backup/static-site-2026-11-24`.

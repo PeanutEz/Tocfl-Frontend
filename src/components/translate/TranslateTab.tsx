@@ -17,7 +17,7 @@ import {
 
 const SOURCE_OPTIONS: SourceLang[] = ["auto", "zh-Hant", "zh-Hans", "vi"];
 const TARGET_OPTIONS: TargetLang[] = ["vi", "zh-Hant", "zh-Hans"];
-const DEBOUNCE_MS = 700;
+const DEBOUNCE_MS = 1200;
 // Nhãn ngắn cho tab trên màn hình rộng (đã ở trang dịch Trung - Việt nên "Trung" là hiển nhiên)
 const SHORT_LABELS: Record<SourceLang, string> = { auto: "Phát hiện ngôn ngữ", "zh-Hant": "Phồn thể", "zh-Hans": "Giản thể", vi: "Việt" };
 

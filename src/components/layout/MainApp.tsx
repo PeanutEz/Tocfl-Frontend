@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "firebase/auth";
 import { useUser } from "@/components/auth/AuthGate";
-import { ArrowUp, BookOpen, ClipboardCheck, Languages, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
+import { ArrowUp, BookOpen, ClipboardCheck, Languages, LayoutGrid, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { firebaseAuth } from "@/lib/firebase";
 import { trackUserAction } from "@/lib/tracking";
-import { consumeCacheClearedFlag, loadDialogues, loadDictionary } from "@/lib/data";
+import { consumeCacheClearedFlag, loadDialogues, loadDictionary, loadTopics } from "@/lib/data";
 import { useAsync } from "@/hooks/use-async";
 import { useScrollY } from "@/hooks/use-scroll-y";
 import { glossesOf, searchWords, suggestWords, type SearchDirection } from "@/lib/text";
@@ -25,11 +25,13 @@ import DictionaryTab from "@/components/dictionary/DictionaryTab";
 import DialogueTab, { type DialogueFocus } from "@/components/dialogue/DialogueTab";
 import ExamTab from "@/components/exam/ExamTab";
 import TranslateTab from "@/components/translate/TranslateTab";
+import TopicTab, { pageOfTopic } from "@/components/topics/TopicTab";
 
-type TabId = "dict" | "speak" | "exam" | "translate";
+type TabId = "dict" | "topic" | "speak" | "exam" | "translate";
 
 const TABS: { id: TabId; label: string; icon: LucideIcon; trackDetail: string }[] = [
   { id: "dict", label: "Từ điển", icon: BookOpen, trackDetail: "Chuyển sang tab Từ Điển" },
+  { id: "topic", label: "Từ vựng theo chủ đề", icon: LayoutGrid, trackDetail: "Chuyển sang tab Từ Vựng Theo Chủ Đề" },
   { id: "speak", label: "Hội thoại & đoạn văn", icon: MessagesSquare, trackDetail: "Chuyển sang tab Hội Thoại" },
   { id: "exam", label: "Luyện thi TOCFL", icon: ClipboardCheck, trackDetail: "Chuyển sang tab Luyện Thi TOCFL" },
   { id: "translate", label: "Dịch", icon: Languages, trackDetail: "Chuyển sang tab Dịch" },
@@ -95,10 +97,16 @@ export default function MainApp() {
   const [dictFilter, setDictFilter] = useState<{ kind: "q" | "w"; value: string } | null>(null);
   const [urlRestored, setUrlRestored] = useState(false);
 
+  // --- Từ vựng theo chủ đề ---
+  const topics = useAsync(loadTopics, []);
+  const [topicId, setTopicId] = useState<string | null>(null);
+  const [topicPage, setTopicPage] = useState(1);
+
   // Khôi phục tab / từ khoá / trang từ URL khi tải lại trang (vd: ?q=ban&page=3)
   useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get("tab");
-    if (tabParam === "speak" || tabParam === "exam" || tabParam === "translate") setTab(tabParam);
+    if (tabParam === "topic" || tabParam === "speak" || tabParam === "exam" || tabParam === "translate") setTab(tabParam);
+    if (tabParam === "topic") setTopicId(new URLSearchParams(window.location.search).get("topic")?.trim() || null);
   }, []);
 
   useEffect(() => {
@@ -132,6 +140,7 @@ export default function MainApp() {
     if (!urlRestored) return;
     const params = new URLSearchParams();
     if (tab !== "dict") params.set("tab", tab);
+    if (tab === "topic" && topicId) params.set("topic", topicId);
     if (dictFilter) params.set(dictFilter.kind, dictFilter.value);
     if (dictFilter?.kind === "q" && dictDir === "vi-zh") params.set("dir", dictDir);
     if (dictPage > 1) params.set("page", String(dictPage));
@@ -140,7 +149,7 @@ export default function MainApp() {
     if (url !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
       window.history.replaceState(window.history.state, "", url);
     }
-  }, [urlRestored, tab, dictFilter, dictDir, dictPage]);
+  }, [urlRestored, tab, topicId, dictFilter, dictDir, dictPage]);
 
   // --- Hội thoại ---
   const dialogues = useAsync(loadDialogues, []);
@@ -159,6 +168,13 @@ export default function MainApp() {
       setFocus(null);
     }
     setTab(next);
+  }
+
+  // Mở / đóng một chủ đề; quay lại danh sách thì về đúng trang chứa chủ đề vừa xem
+  function openTopic(id: string | null) {
+    stopSpeaking();
+    if (id === null && topicId) setTopicPage(pageOfTopic(topics.data, topicId));
+    setTopicId(id);
   }
 
   function handleLogout() {
@@ -334,6 +350,11 @@ export default function MainApp() {
                 placeholder="Tìm hội thoại: chữ Hán, pinyin, nghĩa…"
               />
             )}
+            {tab === "topic" && (
+              <p className="flex items-center gap-2 text-left text-lg font-bold sm:hidden">
+                <LayoutGrid size={20} /> Từ vựng theo chủ đề
+              </p>
+            )}
             {tab === "exam" && (
               <p className="flex items-center gap-2 text-left text-lg font-bold sm:hidden">
                 <ClipboardCheck size={20} /> Luyện thi TOCFL
@@ -348,7 +369,7 @@ export default function MainApp() {
         </div>
 
         <nav
-          className={`hidden flex-wrap items-center justify-center gap-2 sm:flex ${tab === "exam" || tab === "translate" ? "" : "mt-2"}`}
+          className={`hidden flex-wrap items-center justify-center gap-2 sm:flex ${tab === "exam" || tab === "translate" || tab === "topic" ? "" : "mt-2"}`}
           aria-label="Chức năng"
         >
           {TABS.map(({ id, label, icon: Icon }) => (
@@ -397,6 +418,18 @@ export default function MainApp() {
             page={dictPage}
             onPageChange={setDictPage}
           />
+        </div>
+        <div hidden={tab !== "topic"}>
+          {tab === "topic" && (
+            <TopicTab
+              topics={topics}
+              words={words}
+              topicId={topicId}
+              page={topicPage}
+              onPageChange={setTopicPage}
+              onOpenTopic={openTopic}
+            />
+          )}
         </div>
         <div hidden={tab !== "speak"}>
           {tab === "speak" && <DialogueTab state={dialogues} focus={focus} />}

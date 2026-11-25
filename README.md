@@ -55,7 +55,8 @@ npm run dev                  # http://localhost:3000
 
 | Lệnh | Việc làm |
 |---|---|
-| `npm run dev` | Chạy bản phát triển |
+| `npm run dev` | Chạy bản phát triển: Next.js (cổng 3000) cùng Worker dịch (cổng 8787) |
+| `npm run dev:next` / `npm run dev:worker` | Chỉ chạy Next.js / chỉ chạy Worker dịch |
 | `npm run typecheck` | Kiểm tra kiểu TypeScript |
 | `npm run build` | Build site tĩnh ra thư mục `out/` |
 | `npm run generate-audio` | Tạo MP3 cho toàn bộ từ, từ ghép, ví dụ và thành ngữ trong dữ liệu từ điển |

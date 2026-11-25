@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:worker": "wrangler dev --port 8787",
+    "dev": "node scripts/dev.mjs",
+    "dev:next": "next dev",
+    "dev:worker": "node -e \"require('fs').mkdirSync('.wrangler/dev-assets',{recursive:true})\" && wrangler dev --port 8787 --assets .wrangler/dev-assets",
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "generate-audio": "node scripts/generate-word-audio.mjs"
