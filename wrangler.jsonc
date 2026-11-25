@@ -3,7 +3,7 @@
 // mọi đường dẫn khác trả thẳng file tĩnh. Có file này thì `wrangler deploy` không tự đoán cấu hình Next.js nữa.
 {
   // Phải trùng tên Worker trên Cloudflare Dashboard
-  "name": "tocfl",
+  "name": "tocfl-frontend",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
