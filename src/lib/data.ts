@@ -1,4 +1,4 @@
-import type { Dialogue, Exam, Topic, Word } from "@/types";
+import type { Dialogue, Exam, GrammarPoint, Topic, Word } from "@/types";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -31,6 +31,8 @@ export const loadDictionary = () =>
 export const loadDialogues = () => loadJson<Dialogue[]>("dialogues.json");
 
 export const loadTopics = () => loadJson<Topic[]>("topics.json");
+
+export const loadGrammar = () => loadJson<GrammarPoint[]>("grammar.json");
 
 export const loadExam = (id: string) => loadJson<Exam>(`exams/${id}.json`);
 

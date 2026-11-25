@@ -1,0 +1,73 @@
+[
+  {
+    "id": "shi-la",
+    "level": "TOCFL A1",
+    "title": "Câu khẳng định với 是",
+    "pattern": "A + 是 + B",
+    "explanation": "Dùng 是 (là) để nối hai danh từ, cho biết A là gì hoặc là ai.<br>Phủ định: thêm 不 trước 是, đọc là <b>bú shì</b>.",
+    "examples": [
+      { "tc": "我是學生。", "py": "Wǒ shì xuéshēng.", "vn": "Tôi là học sinh." },
+      { "tc": "他不是老師。", "py": "Tā bú shì lǎoshī.", "vn": "Anh ấy không phải là giáo viên." }
+    ],
+    "note": "Không dùng 是 trước tính từ: nói 我很忙, không nói 我是忙."
+  },
+  {
+    "id": "ma-cau-hoi",
+    "level": "TOCFL A1",
+    "title": "Câu hỏi có / không với 嗎",
+    "pattern": "Câu trần thuật + 嗎？",
+    "explanation": "Thêm 嗎 vào cuối câu trần thuật để biến câu thành câu hỏi có / không. Trật tự từ giữ nguyên.",
+    "examples": [
+      { "tc": "你是臺灣人嗎？", "py": "Nǐ shì Táiwān rén ma?", "vn": "Bạn là người Đài Loan phải không?" },
+      { "tc": "你喜歡喝茶嗎？", "py": "Nǐ xǐhuān hē chá ma?", "vn": "Bạn có thích uống trà không?" }
+    ],
+    "note": "Câu đã có từ để hỏi (什麼, 誰, 哪裡…) thì không thêm 嗎."
+  },
+  {
+    "id": "hen-tinh-tu",
+    "level": "TOCFL A1",
+    "title": "Tính từ làm vị ngữ với 很",
+    "pattern": "Chủ ngữ + 很 + Tính từ",
+    "explanation": "Khi tính từ đứng làm vị ngữ, thường thêm 很 phía trước. Trong câu này 很 nhiều khi chỉ để câu tự nhiên, không nhất thiết mang nghĩa \"rất\".",
+    "examples": [
+      { "tc": "這個房子很漂亮。", "py": "Zhège fángzi hěn piàoliang.", "vn": "Căn nhà này đẹp." },
+      { "tc": "今天很熱。", "py": "Jīntiān hěn rè.", "vn": "Hôm nay trời nóng." }
+    ]
+  },
+  {
+    "id": "de-so-huu",
+    "level": "TOCFL A1",
+    "title": "Sở hữu với 的",
+    "pattern": "Người / vật sở hữu + 的 + Danh từ",
+    "explanation": "的 đứng giữa người sở hữu và vật được sở hữu, tương tự \"của\" nhưng đặt theo thứ tự ngược với tiếng Việt.",
+    "examples": [
+      { "tc": "這是我哥哥的手機。", "py": "Zhè shì wǒ gēge de shǒujī.", "vn": "Đây là điện thoại của anh trai tôi." },
+      { "tc": "你的書在哪裡？", "py": "Nǐ de shū zài nǎlǐ?", "vn": "Sách của bạn ở đâu?" }
+    ],
+    "note": "Với người thân hoặc tổ chức quen thuộc có thể bỏ 的: 我媽媽, 我們學校."
+  },
+  {
+    "id": "bi-so-sanh",
+    "level": "TOCFL A2",
+    "title": "So sánh hơn với 比",
+    "pattern": "A + 比 + B + Tính từ (+ mức độ)",
+    "explanation": "Dùng 比 để nói A hơn B về một tính chất. Muốn nói hơn bao nhiêu thì thêm 一點 (một chút) hoặc 多了 (nhiều) sau tính từ.",
+    "examples": [
+      { "tc": "捷運比公車快。", "py": "Jiéyùn bǐ gōngchē kuài.", "vn": "Tàu điện ngầm nhanh hơn xe buýt." },
+      { "tc": "今天比昨天冷一點。", "py": "Jīntiān bǐ zuótiān lěng yìdiǎn.", "vn": "Hôm nay lạnh hơn hôm qua một chút." }
+    ],
+    "note": "Không dùng 很 hay 非常 trong câu 比: không nói 捷運比公車很快."
+  },
+  {
+    "id": "ba-xu-ly",
+    "level": "TOCFL A2",
+    "title": "Câu chữ 把",
+    "pattern": "Chủ ngữ + 把 + Tân ngữ + Động từ + thành phần khác",
+    "explanation": "Câu 把 nhấn mạnh việc xử lý một đối tượng cụ thể và kết quả của việc đó. Tân ngữ được đưa lên trước động từ.",
+    "examples": [
+      { "tc": "請把門關上。", "py": "Qǐng bǎ mén guānshàng.", "vn": "Làm ơn đóng cửa lại." },
+      { "tc": "我把功課寫完了。", "py": "Wǒ bǎ gōngkè xiěwán le.", "vn": "Tôi làm xong bài tập rồi." }
+    ],
+    "note": "Động từ không đứng một mình mà phải có kết quả, hướng hoặc 了 theo sau."
+  }
+]

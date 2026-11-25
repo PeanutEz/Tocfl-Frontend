@@ -61,6 +61,8 @@ src/
     dialogue/          DialogueTab, DialogueCard, ChoiceExercise
     exam/              ExamTab, ReadingTest, ListeningTest, shared (options/feedback/score)
     translate/         TranslateTab (giao diện kiểu Google Dịch)
+    topics/            TopicTab, TopicList, TopicWords, WordDialog (từ vựng theo chủ đề, đọc public/data/topics.json)
+    grammar/           GrammarTab (danh sách + chi tiết điểm ngữ pháp, đọc public/data/grammar.json)
   hooks/
     use-async.ts       useAsync(): chạy Promise, trả { data, error }
     use-scroll-y.ts    useScrollY(): vị trí cuộn
@@ -78,7 +80,7 @@ worker/
   types/
     index.ts           kiểu dữ liệu của các file JSON
 public/
-  data/           dictionary-a1.json, dictionary-a2.json, dialogues.json, exams/A_1.json, exams/A_2.json
+  data/           dictionary-a1.json, dictionary-a2.json, topics.json, grammar.json, dialogues.json, exams/A_1.json, exams/A_2.json
   images/         ảnh đề thi (Test_01, Test_02, Listening/…)
   audio/          file nghe mp3 (Test_01, Test_02)
 ```

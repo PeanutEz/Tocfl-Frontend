@@ -99,3 +99,14 @@ export type Topic = {
   icon: string; // tên icon lucide-react, ánh xạ trong components/topics/topic-icons.ts
   words: string[];
 };
+
+/** Một điểm ngữ pháp trong public/data/grammar.json. */
+export type GrammarPoint = {
+  id: string;
+  level: string; // "TOCFL A1" | "TOCFL A2"
+  title: string;
+  pattern: string;
+  explanation: string; // có thể chứa HTML đơn giản (<br>, <b>)
+  examples: Phrase[];
+  note?: string;
+};

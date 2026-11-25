@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "firebase/auth";
 import { useUser } from "@/components/auth/AuthGate";
-import { ArrowUp, BookOpen, ClipboardCheck, Languages, LayoutGrid, Menu, MessagesSquare, type LucideIcon } from "lucide-react";
+import { ArrowUp, BookOpen, ClipboardCheck, Languages, LayoutGrid, Menu, MessagesSquare, Puzzle, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { firebaseAuth } from "@/lib/firebase";
 import { trackUserAction } from "@/lib/tracking";
-import { consumeCacheClearedFlag, loadDialogues, loadDictionary, loadTopics } from "@/lib/data";
+import { consumeCacheClearedFlag, loadDialogues, loadDictionary, loadGrammar, loadTopics } from "@/lib/data";
 import { useAsync } from "@/hooks/use-async";
 import { useScrollY } from "@/hooks/use-scroll-y";
 import { glossesOf, searchWords, suggestWords, type SearchDirection } from "@/lib/text";
@@ -26,12 +26,15 @@ import DialogueTab, { type DialogueFocus } from "@/components/dialogue/DialogueT
 import ExamTab from "@/components/exam/ExamTab";
 import TranslateTab from "@/components/translate/TranslateTab";
 import TopicTab, { pageOfTopic } from "@/components/topics/TopicTab";
+import GrammarTab from "@/components/grammar/GrammarTab";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
-type TabId = "dict" | "topic" | "speak" | "exam" | "translate";
+type TabId = "dict" | "topic" | "grammar" | "speak" | "exam" | "translate";
 
 const TABS: { id: TabId; label: string; icon: LucideIcon; trackDetail: string }[] = [
   { id: "dict", label: "Từ điển", icon: BookOpen, trackDetail: "Chuyển sang tab Từ Điển" },
   { id: "topic", label: "Từ vựng theo chủ đề", icon: LayoutGrid, trackDetail: "Chuyển sang tab Từ Vựng Theo Chủ Đề" },
+  { id: "grammar", label: "Ngữ pháp", icon: Puzzle, trackDetail: "Chuyển sang tab Ngữ Pháp" },
   { id: "speak", label: "Hội thoại & đoạn văn", icon: MessagesSquare, trackDetail: "Chuyển sang tab Hội Thoại" },
   { id: "exam", label: "Luyện thi TOCFL", icon: ClipboardCheck, trackDetail: "Chuyển sang tab Luyện Thi TOCFL" },
   { id: "translate", label: "Dịch", icon: Languages, trackDetail: "Chuyển sang tab Dịch" },
@@ -102,10 +105,15 @@ export default function MainApp() {
   const [topicId, setTopicId] = useState<string | null>(null);
   const [topicPage, setTopicPage] = useState(1);
 
+  // --- Ngữ pháp ---
+  const grammar = useAsync(loadGrammar, []);
+  const [grammarId, setGrammarId] = useState<string | null>(null);
+
   // Khôi phục tab / từ khoá / trang từ URL khi tải lại trang (vd: ?q=ban&page=3)
   useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get("tab");
-    if (tabParam === "topic" || tabParam === "speak" || tabParam === "exam" || tabParam === "translate") setTab(tabParam);
+    if (tabParam === "topic" || tabParam === "grammar" || tabParam === "speak" || tabParam === "exam" || tabParam === "translate") setTab(tabParam);
+    if (tabParam === "grammar") setGrammarId(new URLSearchParams(window.location.search).get("g")?.trim() || null);
     if (tabParam === "topic") setTopicId(new URLSearchParams(window.location.search).get("topic")?.trim() || null);
   }, []);
 
@@ -141,6 +149,7 @@ export default function MainApp() {
     const params = new URLSearchParams();
     if (tab !== "dict") params.set("tab", tab);
     if (tab === "topic" && topicId) params.set("topic", topicId);
+    if (tab === "grammar" && grammarId) params.set("g", grammarId);
     if (dictFilter) params.set(dictFilter.kind, dictFilter.value);
     if (dictFilter?.kind === "q" && dictDir === "vi-zh") params.set("dir", dictDir);
     if (dictPage > 1) params.set("page", String(dictPage));
@@ -149,7 +158,7 @@ export default function MainApp() {
     if (url !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
       window.history.replaceState(window.history.state, "", url);
     }
-  }, [urlRestored, tab, topicId, dictFilter, dictDir, dictPage]);
+  }, [urlRestored, tab, topicId, grammarId, dictFilter, dictDir, dictPage]);
 
   // --- Hội thoại ---
   const dialogues = useAsync(loadDialogues, []);
@@ -289,7 +298,8 @@ export default function MainApp() {
         <div className="mb-1 flex items-center justify-center gap-3 sm:justify-between">
           <span className="rounded bg-white/15 px-2.5 py-1 text-xs font-semibold tracking-wide sm:text-sm">國立臺南大學 NUTN</span>
           {/* Màn hình nhỏ dùng menu hamburger nên chỉ hiện từ sm trở lên */}
-          <div className="hidden sm:block">
+          <div className="hidden items-center gap-2 sm:flex">
+            <ThemeToggle />
             <AccountMenu
               email={user.email ?? ""}
               signingOut={signingOut}
@@ -355,6 +365,11 @@ export default function MainApp() {
                 <LayoutGrid size={20} /> Từ vựng theo chủ đề
               </p>
             )}
+            {tab === "grammar" && (
+              <p className="flex items-center gap-2 text-left text-lg font-bold sm:hidden">
+                <Puzzle size={20} /> Ngữ pháp
+              </p>
+            )}
             {tab === "exam" && (
               <p className="flex items-center gap-2 text-left text-lg font-bold sm:hidden">
                 <ClipboardCheck size={20} /> Luyện thi TOCFL
@@ -369,7 +384,7 @@ export default function MainApp() {
         </div>
 
         <nav
-          className={`hidden flex-wrap items-center justify-center gap-2 sm:flex ${tab === "exam" || tab === "translate" || tab === "topic" ? "" : "mt-2"}`}
+          className={`hidden flex-wrap items-center justify-center gap-2 sm:flex ${tab === "exam" || tab === "translate" || tab === "topic" || tab === "grammar" ? "" : "mt-2"}`}
           aria-label="Chức năng"
         >
           {TABS.map(({ id, label, icon: Icon }) => (
@@ -430,6 +445,9 @@ export default function MainApp() {
               onOpenTopic={openTopic}
             />
           )}
+        </div>
+        <div hidden={tab !== "grammar"}>
+          {tab === "grammar" && <GrammarTab state={grammar} pointId={grammarId} onOpen={setGrammarId} />}
         </div>
         <div hidden={tab !== "speak"}>
           {tab === "speak" && <DialogueTab state={dialogues} focus={focus} />}
