@@ -7,6 +7,19 @@ import { openPracticeSheet } from "@/lib/practice-sheet";
 
 type Props = { chars: string[]; pinyin: string; hanViet: string };
 
+/**
+ * HanziWriter gắn clip-path theo URL tuyệt đối của trang (url("http://…/?page=2#mask")).
+ * MainApp đổi query string bằng replaceState, URL cũ không còn khớp nên mặt nạ mất tác dụng
+ * và nét vẽ hiện thành vệt bút dày. Đổi về dạng tương đối url(#mask) để luôn trỏ đúng.
+ */
+function fixClipPaths(el: HTMLElement | null) {
+  el?.querySelectorAll<SVGElement>("[clip-path]").forEach((node) => {
+    const value = node.getAttribute("clip-path") ?? "";
+    const id = value.match(/#([^"')]+)["']?\)\s*$/)?.[1];
+    if (id && value !== `url(#${id})`) node.setAttribute("clip-path", `url(#${id})`);
+  });
+}
+
 /** Ô vẽ thứ tự nét cho từng chữ (HanziWriter) kèm nút tải mẫu luyện viết. */
 export default function StrokeOrder({ chars, pinyin, hanViet }: Props) {
   const boxes = useRef<(HTMLDivElement | null)[]>([]);
@@ -24,7 +37,10 @@ export default function StrokeOrder({ chars, pinyin, hanViet }: Props) {
     const play = () => {
       if (!ready || !visible || played) return;
       played = true;
-      writers.current.forEach((w) => w?.animateCharacter());
+      writers.current.forEach((w, i) => {
+        fixClipPaths(boxes.current[i]);
+        w?.animateCharacter();
+      });
     };
 
     const observer = new IntersectionObserver(
@@ -51,6 +67,7 @@ export default function StrokeOrder({ chars, pinyin, hanViet }: Props) {
           showCharacter: false, // chỉ hiện nét mờ cho đến khi được vẽ
           strokeAnimationSpeed: 1.5,
           delayBetweenStrokes: 50,
+          onLoadCharDataSuccess: () => requestAnimationFrame(() => fixClipPaths(el)),
           onLoadCharDataError: () => {
             el.innerHTML = `<span style="font-size:44px;line-height:70px">${char}</span>`;
           },
@@ -78,7 +95,10 @@ export default function StrokeOrder({ chars, pinyin, hanViet }: Props) {
             ref={(el) => {
               boxes.current[i] = el;
             }}
-            onClick={() => writers.current[i]?.animateCharacter()}
+            onClick={() => {
+              fixClipPaths(boxes.current[i]);
+              writers.current[i]?.animateCharacter();
+            }}
             title="Bấm để xem lại thứ tự nét"
             className="h-[70px] w-[70px] cursor-pointer rounded-md border border-dashed border-[#bdc3c7] bg-white"
           />

@@ -81,9 +81,18 @@ function indexOf(all: Word[]): IndexedWord[] {
 const hasWord = (field: string, q: string) => ` ${field} `.includes(` ${q} `);
 
 export type MatchSource = "word" | "pinyin" | "vi";
+
+/** Chiều tra: "zh-vi" gõ chữ Hán / pinyin để xem nghĩa; "vi-zh" gõ tiếng Việt để tìm từ tiếng Trung. */
+export type SearchDirection = "zh-vi" | "vi-zh";
 export type WordMatch = { item: Word; score: number; via: MatchSource };
 
-function scoreWord(e: IndexedWord, raw: string, viQuery: string, pinyinQuery: string | null): WordMatch | null {
+function scoreWord(
+  e: IndexedWord,
+  hanziQuery: string,
+  raw: string,
+  viQuery: string,
+  pinyinQuery: string | null,
+): WordMatch | null {
   let best = 0;
   let via: MatchSource = "word";
   const take = (score: number, source: MatchSource) => {
@@ -94,9 +103,11 @@ function scoreWord(e: IndexedWord, raw: string, viQuery: string, pinyinQuery: st
   };
 
   // 1. Chữ Hán
-  if (e.word === raw) take(100, "word");
-  else if (e.word.startsWith(raw)) take(90, "word");
-  else if (e.word.includes(raw)) take(70, "word");
+  if (hanziQuery) {
+    if (e.word === hanziQuery) take(100, "word");
+    else if (e.word.startsWith(hanziQuery)) take(90, "word");
+    else if (e.word.includes(hanziQuery)) take(70, "word");
+  }
 
   // 2. Pinyin (gõ có dấu hoặc không dấu)
   if (pinyinQuery) {
@@ -132,30 +143,35 @@ function scoreWord(e: IndexedWord, raw: string, viQuery: string, pinyinQuery: st
   return best > 0 ? { item: e.item, score: best, via } : null;
 }
 
-/** Tìm theo chữ Hán, pinyin (có/không dấu), âm Hán Việt hoặc nghĩa tiếng Việt (có/không dấu). */
-export function matchWords(all: Word[], input: string, limit?: number): WordMatch[] {
+/**
+ * Tìm theo chữ Hán, pinyin (có/không dấu), âm Hán Việt hoặc nghĩa tiếng Việt (có/không dấu).
+ * Có `direction` thì chỉ tìm một chiều: "zh-vi" = chữ Hán + pinyin, "vi-zh" = nghĩa + âm Hán Việt.
+ */
+export function matchWords(all: Word[], input: string, limit?: number, direction?: SearchDirection): WordMatch[] {
   const raw = lowerVi(input);
   if (!raw) return [];
-  const viQuery = normalizeVi(raw);
-  const pinyinQuery = VI_ONLY_MARKS.test(raw.normalize("NFD")) ? null : removeTones(raw) || null;
+  const viQuery = direction === "zh-vi" ? "" : normalizeVi(raw);
+  const pinyinQuery =
+    direction === "vi-zh" || VI_ONLY_MARKS.test(raw.normalize("NFD")) ? null : removeTones(raw) || null;
+  const hanziQuery = direction === "vi-zh" ? "" : raw;
 
   const results: WordMatch[] = [];
   for (const e of indexOf(all)) {
-    const m = scoreWord(e, raw, viQuery, pinyinQuery);
+    const m = scoreWord(e, hanziQuery, raw, viQuery, pinyinQuery);
     if (m) results.push(m);
   }
   results.sort((a, b) => b.score - a.score || a.item.word.length - b.item.word.length);
   return limit ? results.slice(0, limit) : results;
 }
 
-export function suggestWords(all: Word[], raw: string, limit = 6): WordMatch[] {
-  return matchWords(all, raw, limit);
+export function suggestWords(all: Word[], raw: string, direction?: SearchDirection, limit = 6): WordMatch[] {
+  return matchWords(all, raw, limit, direction);
 }
 
 /** Tìm kiếm khi nhấn Enter; ô trống thì trả về toàn bộ từ điển. */
-export function searchWords(all: Word[], raw: string): Word[] {
+export function searchWords(all: Word[], raw: string, direction?: SearchDirection): Word[] {
   if (!raw.trim()) return all;
-  return matchWords(all, raw).map((m) => m.item);
+  return matchWords(all, raw, undefined, direction).map((m) => m.item);
 }
 
 /** Lấy các chữ Hán của từ chính để vẽ thứ tự nét (bỏ chữ Latin, số, dấu câu). */

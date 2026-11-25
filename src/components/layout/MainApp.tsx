@@ -10,11 +10,13 @@ import { trackUserAction } from "@/lib/tracking";
 import { loadDialogues, loadDictionary } from "@/lib/data";
 import { useAsync } from "@/hooks/use-async";
 import { useScrollY } from "@/hooks/use-scroll-y";
-import { glossesOf, searchWords, suggestWords } from "@/lib/text";
+import { glossesOf, searchWords, suggestWords, type SearchDirection } from "@/lib/text";
 import { levelOf, searchDialogues } from "@/lib/dialogues";
 import { pauseAllAudio, stopSpeaking } from "@/lib/speech";
+import { getUnsavedAnswers } from "@/lib/unsaved-work";
 import type { Word } from "@/types";
 import SearchBox, { type Suggestion } from "@/components/ui/SearchBox";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import MobileMenu from "./MobileMenu";
 import AccountMenu from "./AccountMenu";
 import DictionaryTab from "@/components/dictionary/DictionaryTab";
@@ -66,6 +68,8 @@ export default function MainApp() {
   const [tab, setTab] = useState<TabId>("dict");
   const [signingOut, setSigningOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Số câu đã chọn mà chưa nộp khi bấm đăng xuất (null = không hỏi)
+  const [logoutUnsaved, setLogoutUnsaved] = useState<number | null>(null);
   const scrollY = useScrollY();
   const scrolled = scrollY > 120; // phần tiêu đề đã cuộn khuất, thanh tìm kiếm đang dính
   const showToTop = scrollY > 500;
@@ -74,6 +78,7 @@ export default function MainApp() {
   // --- Từ điển ---
   const words = useAsync(loadDictionary, []);
   const [dictQuery, setDictQuery] = useState("");
+  const [dictDir, setDictDir] = useState<SearchDirection>("zh-vi");
   const [dictResults, setDictResults] = useState<Word[] | null>(null);
   const [dictPage, setDictPage] = useState(1);
   // Lượt tìm đang áp dụng: "q" = tìm theo từ khoá, "w" = chọn đúng một từ từ gợi ý
@@ -98,7 +103,9 @@ export default function MainApp() {
       setDictQuery(w);
       setDictFilter({ kind: "w", value: w });
     } else if (q) {
-      results = searchWords(words.data, q);
+      const dir: SearchDirection = params.get("dir") === "vi-zh" ? "vi-zh" : "zh-vi";
+      setDictDir(dir);
+      results = searchWords(words.data, q, dir);
       setDictQuery(q);
       setDictFilter({ kind: "q", value: q });
     }
@@ -116,13 +123,14 @@ export default function MainApp() {
     const params = new URLSearchParams();
     if (tab !== "dict") params.set("tab", tab);
     if (dictFilter) params.set(dictFilter.kind, dictFilter.value);
+    if (dictFilter?.kind === "q" && dictDir === "vi-zh") params.set("dir", dictDir);
     if (dictPage > 1) params.set("page", String(dictPage));
     const qs = params.toString();
     const url = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
     if (url !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
       window.history.replaceState(window.history.state, "", url);
     }
-  }, [urlRestored, tab, dictFilter, dictPage]);
+  }, [urlRestored, tab, dictFilter, dictDir, dictPage]);
 
   // --- Hội thoại ---
   const dialogues = useAsync(loadDialogues, []);
@@ -157,10 +165,19 @@ export default function MainApp() {
     }, 500);
   }
 
+  // Còn bài thi đang làm dở thì hỏi lại trước khi đăng xuất
+  function requestLogout() {
+    const unsaved = getUnsavedAnswers();
+    if (unsaved > 0) {
+      setMenuOpen(false);
+      setLogoutUnsaved(unsaved);
+    } else handleLogout();
+  }
+
   // Từ điển: gợi ý & tìm kiếm
   const dictSuggestions: Suggestion[] = useMemo(() => {
     if (!words.data) return [];
-    return suggestWords(words.data, dictQuery).map(({ item, via }, i) => ({
+    return suggestWords(words.data, dictQuery, dictDir).map(({ item, via }, i) => ({
       key: `${item.word}-${i}`,
       primary: (
         <>
@@ -176,16 +193,30 @@ export default function MainApp() {
         setDictPage(1);
       },
     }));
-  }, [words.data, dictQuery]);
+  }, [words.data, dictQuery, dictDir]);
 
   function submitDictSearch(raw: string) {
     trackUserAction("SearchWord", "Tra từ khóa: " + raw.trim());
     if (!words.data) return;
-    const results = raw.trim() ? searchWords(words.data, raw) : null;
+    const results = raw.trim() ? searchWords(words.data, raw, dictDir) : null;
     setDictResults(results);
     setDictFilter(raw.trim() ? { kind: "q", value: raw.trim() } : null);
     setDictPage(1);
-    if (results && results.length === 0) toast.info(`Không tìm thấy từ nào khớp với “${raw.trim()}”.`);
+    if (results && results.length === 0) {
+      toast.info(`Không tìm thấy từ nào khớp với “${raw.trim()}”.`, {
+        description: dictDir === "zh-vi" ? "Đang tra Trung → Việt. Gõ tiếng Việt thì đổi sang Việt → Trung." : "Đang tra Việt → Trung. Gõ chữ Hán hoặc pinyin thì đổi sang Trung → Việt.",
+      });
+    }
+  }
+
+  // Đổi chiều tra; đang có kết quả tìm theo từ khoá thì tìm lại theo chiều mới
+  function toggleDictDir() {
+    const next: SearchDirection = dictDir === "zh-vi" ? "vi-zh" : "zh-vi";
+    setDictDir(next);
+    if (words.data && dictFilter?.kind === "q") {
+      setDictResults(searchWords(words.data, dictFilter.value, next));
+      setDictPage(1);
+    }
   }
 
   // Hội thoại: gợi ý & nhảy tới bài
@@ -218,13 +249,13 @@ export default function MainApp() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] rounded-lg bg-white p-2 shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:w-[95%] sm:p-5">
+    <div className="mx-auto w-full max-w-[1400px] rounded-lg bg-white p-2 shadow-[0_5px_15px_rgba(0,0,0,0.1)] sm:w-[96%] sm:p-5">
       <header className="rounded-t-lg bg-brand px-4 pt-3 text-center text-white sm:px-5 sm:pt-4">
         <div className="mb-1 flex items-center justify-center gap-3 sm:justify-between">
           <span className="rounded bg-white/15 px-2.5 py-1 text-xs font-semibold tracking-wide sm:text-sm">國立臺南大學 NUTN</span>
           {/* Màn hình nhỏ dùng menu hamburger nên chỉ hiện từ sm trở lên */}
           <div className="hidden sm:block">
-            <AccountMenu email={user.email ?? ""} signingOut={signingOut} onLogout={handleLogout} />
+            <AccountMenu email={user.email ?? ""} signingOut={signingOut} onLogout={requestLogout} />
           </div>
         </div>
 
@@ -261,7 +292,13 @@ export default function MainApp() {
                   setDictPage(1);
                 }}
                 suggestions={dictSuggestions}
-                placeholder="Tra từ: 你好, nihao, xin chào, bạn bè…"
+                direction={{
+                  from: dictDir === "zh-vi" ? "Trung" : "Việt",
+                  to: dictDir === "zh-vi" ? "Việt" : "Trung",
+                  label: dictDir === "zh-vi" ? "Đang tra Trung sang Việt" : "Đang tra Việt sang Trung",
+                  onToggle: toggleDictDir,
+                }}
+                placeholder={dictDir === "zh-vi" ? "Gõ chữ Hán hoặc pinyin: 你好, nihao…" : "Gõ tiếng Việt: xin chào, bạn bè…"}
               />
             )}
             {tab === "speak" && (
@@ -314,7 +351,7 @@ export default function MainApp() {
         }}
         email={user.email ?? ""}
         signingOut={signingOut}
-        onLogout={handleLogout}
+        onLogout={requestLogout}
       />
 
       <main className="mt-4 sm:mt-5">
@@ -333,6 +370,24 @@ export default function MainApp() {
           <ExamTab />
         </div>
       </main>
+
+      <ConfirmDialog
+        open={logoutUnsaved !== null}
+        title="Đăng xuất khi chưa nộp bài?"
+        description={
+          <>
+            Bạn đã chọn đáp án cho <strong>{logoutUnsaved} câu</strong> trong đề thi nhưng chưa nộp. Đăng xuất thì các đáp án này sẽ bị
+            xoá.
+          </>
+        }
+        cancelLabel="Ở lại làm tiếp"
+        confirmLabel="Vẫn đăng xuất"
+        onCancel={() => setLogoutUnsaved(null)}
+        onConfirm={() => {
+          setLogoutUnsaved(null);
+          handleLogout();
+        }}
+      />
 
       <button
         type="button"

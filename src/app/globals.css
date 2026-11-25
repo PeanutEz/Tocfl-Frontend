@@ -30,6 +30,25 @@
 
 html {
   scroll-behavior: smooth;
+  /* Thanh cuộn cùng màu header */
+  scrollbar-color: var(--color-brand) var(--color-page);
+}
+
+/* Safari / trình duyệt chưa hỗ trợ scrollbar-color */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand);
+  border: 2px solid var(--color-page);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-dark);
 }
 
 body {
@@ -84,6 +103,30 @@ img {
   animation: loading-slide 1.1s ease-in-out infinite;
 }
 
+/* Màn hình chờ: thanh tải chạy trong thân chữ M (đầy dần từ trái, rồi rút dần sang phải) */
+@keyframes loading-m-fill {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  50.01% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+.loading-m-bar {
+  transform-box: fill-box;
+  animation: loading-m-fill 1.75s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
 /* Nội dung trang mới hiện dần lên */
 @keyframes page-enter {
   from {
@@ -129,6 +172,7 @@ img {
 
 @media (prefers-reduced-motion: reduce) {
   .loading-bar,
+  .loading-m-bar,
   .page-enter,
   .slide-down,
   .fade-in {

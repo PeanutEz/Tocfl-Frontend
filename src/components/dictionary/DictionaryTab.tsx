@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, SearchX } from "lucide-react";
 import type { Word } from "@/types";
 import { ErrorBlock } from "@/components/ui";
-import LoadingScreen from "@/components/ui/LoadingScreen";
+import LoadingScreen, { LOADING_MIN_MS } from "@/components/ui/LoadingScreen";
 import Pagination from "./Pagination";
 import WordCard from "./WordCard";
 import WordCardSkeleton from "./WordCardSkeleton";
+import WordNav, { wordDomId } from "./WordNav";
 
 const PAGE_SIZE = 10;
 // Thời gian hiện màn hình chờ (kèm câu cảm hứng) mỗi lần chuyển trang
-const PAGE_LOADING_MS = 1750;
+const PAGE_LOADING_MS = LOADING_MIN_MS;
 
 type Props = {
   state: { data: Word[] | null; error: Error | null };
@@ -44,6 +45,14 @@ export default function DictionaryTab({ state, items, page, onPageChange }: Prop
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
+  const totalPages = Math.ceil(items.length / PAGE_SIZE);
+  const start = (page - 1) * PAGE_SIZE;
+  // Các từ trong trang kèm vị trí trong toàn bộ kết quả (làm id để danh sách bên phải cuộn tới)
+  const pageItems = useMemo(
+    () => items.slice(start, start + PAGE_SIZE).map((item, i) => ({ index: start + i, item })),
+    [items, start],
+  );
+
   // Kết quả tìm kiếm thay đổi thì bỏ lượt chuyển trang đang chờ
   useEffect(() => {
     clearTimeout(timer.current);
@@ -57,14 +66,10 @@ export default function DictionaryTab({ state, items, page, onPageChange }: Prop
     return (
       <div className="flex flex-col items-center gap-2 py-16 text-center text-base text-muted">
         <SearchX size={36} />
-        Không tìm thấy từ phù hợp. Thử gõ chữ Hán, pinyin, âm Hán Việt hoặc nghĩa tiếng Việt (có hoặc không dấu).
+        Không tìm thấy từ phù hợp. Kiểm tra lại từ khoá, hoặc bấm nút Trung ⇄ Việt trong ô tìm kiếm để đổi chiều tra.
       </div>
     );
   }
-
-  const totalPages = Math.ceil(items.length / PAGE_SIZE);
-  const start = (page - 1) * PAGE_SIZE;
-  const pageItems = items.slice(start, start + PAGE_SIZE);
 
   // Chuyển trang: hiện màn hình chờ ngay đầu danh sách (dưới thanh tìm kiếm) thay vì nhảy lên đầu trang
   const goTo = (p: number) => {
@@ -91,10 +96,15 @@ export default function DictionaryTab({ state, items, page, onPageChange }: Prop
             {items.length.toLocaleString("vi-VN")} từ
             {totalPages > 1 && ` · Trang ${page}/${totalPages}`}
           </p>
-          <div className="page-enter">
-            {pageItems.map((item, i) => (
-              <WordCard key={`${start + i}-${item.word}`} item={item} />
-            ))}
+          <div className="lg:flex lg:items-start lg:gap-4">
+            <div className="page-enter min-w-0 flex-1">
+              {pageItems.map(({ index, item }) => (
+                <div key={`${index}-${item.word}`} id={wordDomId(index)} className="scroll-mt-20 sm:scroll-mt-32">
+                  <WordCard item={item} />
+                </div>
+              ))}
+            </div>
+            <WordNav items={pageItems} page={page} totalPages={totalPages} />
           </div>
         </>
       )}

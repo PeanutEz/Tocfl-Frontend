@@ -1,19 +1,28 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircleAlert, CircleCheck, CircleX, RotateCcw, Send, Trophy } from "lucide-react";
 import { asset } from "@/lib/data";
+import { setUnsavedAnswers } from "@/lib/unsaved-work";
 import type { ExamOption } from "@/types";
 import { Rich } from "@/components/ui";
 import SmartImage from "@/components/ui/SmartImage";
 
 export type Answers = Record<string, string>;
 
-/** Trạng thái một lượt làm bài: chọn đáp án → nộp → xem kết quả → làm lại. */
-export function useTestSession() {
+/**
+ * Trạng thái một lượt làm bài: chọn đáp án → nộp → xem kết quả → làm lại.
+ * `source` dùng để báo số câu đã chọn mà chưa nộp (cảnh báo khi đổi đề / rời trang).
+ */
+export function useTestSession(source: string) {
   const [answers, setAnswers] = useState<Answers>({});
   const [score, setScore] = useState<{ correct: number; total: number } | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setUnsavedAnswers(source, score === null ? Object.keys(answers).length : 0);
+    return () => setUnsavedAnswers(source, 0);
+  }, [source, answers, score]);
 
   return {
     answers,

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { TriangleAlert } from "lucide-react";
-import LoadingScreen from "@/components/ui/LoadingScreen";
+import LoadingScreen, { LOADING_MIN_MS } from "@/components/ui/LoadingScreen";
 import { firebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
 import { trackUserAction } from "@/lib/tracking";
 import LoginScreen from "./LoginScreen";
@@ -51,7 +51,14 @@ function useCopyProtection() {
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   // undefined = đang kiểm tra phiên đăng nhập
   const [user, setUser] = useState<User | null | undefined>(isFirebaseConfigured ? undefined : null);
+  // Giữ màn hình chờ ít nhất LOADING_MIN_MS để hiệu ứng chữ M chạy trọn, không bị chớp
+  const [minDelayDone, setMinDelayDone] = useState(false);
   useCopyProtection();
+
+  useEffect(() => {
+    const t = setTimeout(() => setMinDelayDone(true), LOADING_MIN_MS);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -75,7 +82,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (user === undefined) return <LoadingScreen />;
+  if (user === undefined || !minDelayDone) return <LoadingScreen />;
 
   if (!user) return <LoginScreen />;
 

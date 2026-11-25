@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Search, X } from "lucide-react";
+import { ArrowLeftRight, Search, X } from "lucide-react";
 
 export type Suggestion = {
   key: string;
@@ -18,12 +18,15 @@ type Props = {
   onClear?: () => void;
   suggestions: Suggestion[];
   placeholder: string;
+  /** Nút đổi chiều tra (vd Trung → Việt / Việt → Trung) ở đầu ô tìm kiếm. */
+  direction?: { from: string; to: string; label: string; onToggle: () => void };
 };
 
-export default function SearchBox({ value, onChange, onSubmit, onClear, suggestions, placeholder }: Props) {
+export default function SearchBox({ value, onChange, onSubmit, onClear, suggestions, placeholder, direction }: Props) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -57,8 +60,27 @@ export default function SearchBox({ value, onChange, onSubmit, onClear, suggesti
   return (
     <div ref={wrapRef} className="relative mx-auto w-full max-w-[700px]">
       <div className="flex items-center gap-2 rounded-md bg-white px-4 py-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.1)] sm:gap-3 sm:px-4 sm:py-1.5">
-        <Search size={20} className="shrink-0 text-muted" />
+        {direction && (
+          <button
+            type="button"
+            onClick={() => {
+              direction.onToggle();
+              inputRef.current?.focus();
+              setOpen(true);
+            }}
+            aria-label={`${direction.label}. Bấm để đổi chiều tra`}
+            title="Đổi chiều tra"
+            className="-ml-2 flex shrink-0 cursor-pointer items-center gap-1 rounded-md bg-brand/10 px-2 py-1.5 text-sm font-bold text-brand transition hover:bg-brand/15 active:scale-95 sm:-ml-1 sm:gap-1.5 sm:px-2.5"
+          >
+            <span className="w-[2.6em] text-center">{direction.from}</span>
+            <ArrowLeftRight size={15} className="shrink-0" />
+            <span className="w-[2.6em] text-center">{direction.to}</span>
+          </button>
+        )}
+        {direction && <span aria-hidden className="h-6 w-px shrink-0 bg-[#e2e2e2]" />}
+        <Search size={20} aria-hidden className="shrink-0 text-muted" />
         <input
+          ref={inputRef}
           type="search"
           value={value}
           placeholder={placeholder}

@@ -1,11 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { Headphones } from "lucide-react";
 import { toast } from "sonner";
 import { asset } from "@/lib/data";
 import { trackUserAction } from "@/lib/tracking";
 import type { ListeningQuestion } from "@/types";
 import SmartImage from "@/components/ui/SmartImage";
+import QuestionNav, { questionDomId, type NavItem } from "./QuestionNav";
 import { ExamOptions, Feedback, ScoreBoard, SubmitBar, useTestSession } from "./shared";
 
 // Hướng dẫn hiện trước câu đầu tiên của mỗi phần (theo thứ tự câu trong đề 50 câu).
@@ -38,7 +40,16 @@ function pauseOtherAudio(e: React.SyntheticEvent<HTMLAudioElement>) {
 }
 
 export default function ListeningTest({ questions }: { questions: ListeningQuestion[] }) {
-  const session = useTestSession();
+  const session = useTestSession("listening");
+  const navItems = useMemo<NavItem[]>(() => {
+    const starts = Object.keys(PART_INTROS).map(Number);
+    return questions.map((q, index) => ({
+      key: String(q.id),
+      label: String(q.id),
+      group: `Phần ${starts.filter((s) => s <= index).length || 1}`,
+      correctAnswer: q.correctAnswer,
+    }));
+  }, [questions]);
 
   function submit() {
     const total = questions.length;
@@ -48,7 +59,9 @@ export default function ListeningTest({ questions }: { questions: ListeningQuest
     session.finish(correct, total);
     trackUserAction("SubmitTest", `Nộp phần thi Nghe, Điểm: ${correct}/${total}`);
     toast.success(`Bạn làm đúng ${correct}/${total} câu`, {
-      description: skipped ? `Còn ${skipped} câu bỏ trống. Xem giải thích chi tiết bên dưới.` : "Xem giải thích chi tiết bên dưới.",
+      description: skipped
+        ? `Còn ${skipped} câu bỏ trống. Xem giải thích chi tiết bên dưới.`
+        : "Xem giải thích chi tiết bên dưới.",
     });
   }
 
@@ -57,69 +70,79 @@ export default function ListeningTest({ questions }: { questions: ListeningQuest
   }
 
   return (
-    <div className="text-left">
-      <ScoreBoard boardRef={session.boardRef} title="Kết quả phần thi Nghe" score={session.score} />
+    <div className="text-left lg:flex lg:items-start lg:gap-4">
+      <div className="min-w-0 flex-1">
+        <ScoreBoard boardRef={session.boardRef} title="Kết quả phần thi Nghe" score={session.score} />
 
-      <h3 className="mb-4 flex items-center gap-2 font-serif-tc text-2xl font-bold text-exam">
-        <Headphones size={24} /> 聽力測驗 · Phần thi Nghe ({questions.length} câu)
-      </h3>
+        <h3 className="mb-4 flex items-center gap-2 font-serif-tc text-2xl font-bold text-exam">
+          <Headphones size={24} /> 聽力測驗 · Phần thi Nghe ({questions.length} câu)
+        </h3>
 
-      {questions.map((q, index) => {
-        const intro = PART_INTROS[index];
-        const layout = q.options.some((o) => o.image) ? "image" : q.options.some((o) => o.text) ? "text" : "label";
-        return (
-          <div key={q.id}>
-            {intro && (
-              <div className={`mb-6 rounded-md border border-sand-light bg-cream px-4 py-4 sm:px-6 sm:py-5 ${index > 0 ? "mt-8" : ""}`}>
-                <h4 className="border-b-2 border-[#d9ceb2] pb-3 font-serif-tc text-[19px] font-bold text-slate-exam">{intro.title}</h4>
-                <p className="mb-2 mt-4 text-base leading-[1.8] text-[#333]">{intro.zh}</p>
-                <p className="text-base italic leading-relaxed text-[#666]">{intro.vn}</p>
-              </div>
-            )}
+        {questions.map((q, index) => {
+          const intro = PART_INTROS[index];
+          const layout = q.options.some((o) => o.image) ? "image" : q.options.some((o) => o.text) ? "text" : "label";
+          return (
+            <div key={q.id}>
+              {intro && (
+                <div
+                  className={`mb-6 rounded-md border border-sand-light bg-cream px-4 py-4 sm:px-6 sm:py-5 ${index > 0 ? "mt-8" : ""}`}
+                >
+                  <h4 className="border-b-2 border-[#d9ceb2] pb-3 font-serif-tc text-[19px] font-bold text-slate-exam">
+                    {intro.title}
+                  </h4>
+                  <p className="mb-2 mt-4 text-base leading-[1.8] text-[#333]">{intro.zh}</p>
+                  <p className="text-base italic leading-relaxed text-[#666]">{intro.vn}</p>
+                </div>
+              )}
 
-            <div className="mb-5 rounded-md border border-[#ddd] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.05)] sm:p-5">
-              <h4 className="mb-3 text-xl font-bold text-[#a33327]">Câu {q.id}</h4>
-              <audio
-                controls
-                controlsList="nodownload"
-                preload="none"
-                onPlay={pauseOtherAudio}
-                onContextMenu={(e) => e.preventDefault()}
-                className="mb-4 h-10 w-full"
-                src={asset(q.audio)}
+              <div
+                id={questionDomId("listening", String(q.id))}
+                className="mb-5 scroll-mt-24 rounded-md border border-[#ddd] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.05)] sm:scroll-mt-32 sm:p-5"
               >
-                Trình duyệt của bạn không phát được âm thanh.
-              </audio>
+                <h4 className="mb-3 text-xl font-bold text-[#a33327]">Câu {q.id}</h4>
+                <audio
+                  controls
+                  controlsList="nodownload"
+                  preload="none"
+                  onPlay={pauseOtherAudio}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="mb-4 h-10 w-full"
+                  src={asset(q.audio)}
+                >
+                  Trình duyệt của bạn không phát được âm thanh.
+                </audio>
 
-              {q.part === 1 && q.question_image && (
-                <SmartImage
-                  src={asset(q.question_image)}
-                  alt={`Hình câu ${q.id}`}
-                  className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-[#eee]"
-                  imgClassName="block h-auto w-full"
-                  placeholderClassName="h-[230px]"
+                {q.part === 1 && q.question_image && (
+                  <SmartImage
+                    src={asset(q.question_image)}
+                    alt={`Hình câu ${q.id}`}
+                    className="mx-auto mb-4 w-full max-w-[350px] rounded-md border border-[#eee]"
+                    imgClassName="block h-auto w-full"
+                    placeholderClassName="h-[230px]"
+                  />
+                )}
+
+                <ExamOptions
+                  name={`Câu ${q.id}`}
+                  options={q.options}
+                  layout={layout}
+                  value={session.answers[q.id]}
+                  correctAnswer={q.correctAnswer}
+                  submitted={session.submitted}
+                  onSelect={(label) => session.select(String(q.id), label)}
                 />
-              )}
 
-              <ExamOptions
-                name={`Câu ${q.id}`}
-                options={q.options}
-                layout={layout}
-                value={session.answers[q.id]}
-                correctAnswer={q.correctAnswer}
-                submitted={session.submitted}
-                onSelect={(label) => session.select(String(q.id), label)}
-              />
-
-              {session.submitted && (
-                <Feedback answer={session.answers[q.id]} correctAnswer={q.correctAnswer} explanation={q.explanation} />
-              )}
+                {session.submitted && (
+                  <Feedback answer={session.answers[q.id]} correctAnswer={q.correctAnswer} explanation={q.explanation} />
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
 
-      <SubmitBar submitted={session.submitted} onSubmit={submit} onReset={session.reset} />
+        <SubmitBar submitted={session.submitted} onSubmit={submit} onReset={session.reset} />
+      </div>
+      <QuestionNav idPrefix="listening" items={navItems} answers={session.answers} submitted={session.submitted} />
     </div>
   );
 }
